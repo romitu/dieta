@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planer posiłków — 14 dni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --porcelain:#EDF1F3;
+  --surface:#FFFFFF;
+  --ink:#16242E;
+  --beet:#9E2B4E;
+  --beet-soft:#F7E9ED;
+  --herb:#47694E;
+  --muted:#64757F;
+  --line:#D3DDE2;
+  --line-strong:#B4C3CB;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--porcelain);
+  color:var(--ink);
+  font-family:Inter,system-ui,sans-serif;
+  font-size:16px;
+  line-height:1.55;
+  padding-bottom:60px;
+}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+
+/* ---- header ---- */
+header{padding:28px 0 18px}
+.eyebrow{
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;margin-bottom:6px;
+}
+h1{
+  font-family:Bitter,Georgia,serif;font-weight:700;
+  font-size:clamp(26px,5.5vw,38px);line-height:1.12;letter-spacing:-.01em;
+}
+.sub{color:var(--muted);font-size:14px;margin-top:6px;max-width:52ch}
+
+/* ---- licznik ---- */
+.tally{
+  position:sticky;top:0;z-index:20;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:12px 14px;
+  margin:16px 0 24px;
+  box-shadow:0 1px 0 var(--line-strong);
+}
+.tally-top{display:flex;flex-wrap:wrap;gap:16px;align-items:baseline}
+.stat{display:flex;align-items:baseline;gap:6px}
+.stat b{
+  font-family:Bitter,serif;font-size:22px;font-weight:700;
+  font-variant-numeric:tabular-nums;line-height:1;
+}
+.stat span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tally-clear{
+  margin-left:auto;background:none;border:1px solid var(--line);
+  color:var(--muted);font:inherit;font-size:12px;font-weight:600;
+  padding:5px 11px;border-radius:2px;cursor:pointer;
+}
+.tally-clear:hover{border-color:var(--beet);color:var(--beet)}
+.gauges{display:flex;gap:10px;margin-top:11px}
+.gauge{flex:1}
+.gauge-label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:4px}
+.gauge-track{height:5px;background:var(--porcelain);border-radius:0;overflow:hidden}
+.gauge-fill{height:100%;width:0;transition:width .3s ease}
+.g-kcal .gauge-fill{background:var(--beet)}
+.g-prot .gauge-fill{background:var(--herb)}
+
+/* ---- rozpiska dzienna ---- */
+.days{margin:0 0 26px}
+.days-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.days-head h2{font-family:Bitter,serif;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+.days-head .rule{flex:1;height:1px;background:var(--line-strong)}
+.days-note{font-size:11.5px;color:var(--muted);font-weight:600}
+.balance{
+  display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;
+}
+.chip{
+  font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:2px;
+  border:1px solid var(--line);background:var(--surface);color:var(--muted);
+  font-variant-numeric:tabular-nums;
+}
+.chip b{color:var(--ink);font-weight:700}
+.chip.short{border-color:var(--beet);color:var(--beet)}
+.chip.short b{color:var(--beet)}
+.balance-hint{
+  font-size:12.5px;color:var(--beet);font-weight:600;margin-bottom:10px;line-height:1.45;
+}
+.day{
+  background:var(--surface);border:1px solid var(--line);
+  border-left:3px solid var(--herb);border-radius:2px;
+  padding:10px 13px;margin-bottom:7px;
+}
+.day-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:6px;
+}
+.day-head b{font-family:Bitter,serif;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.day-head .tot{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--beet);white-space:nowrap}
+.slot{display:flex;gap:10px;font-size:14px;padding:2px 0;align-items:baseline}
+.slot .lab{
+  flex:none;width:74px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;
+}
+.slot .nm{flex:1;line-height:1.35}
+.slot .val{flex:none;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600;font-size:12.5px;white-space:nowrap}
+.slot.zero .nm,.slot.zero .val{color:var(--line-strong)}
+.day-warn{font-size:11.5px;color:var(--beet);font-weight:600;margin-top:5px}
+@media (max-width:400px){ .slot .lab{width:62px;font-size:9px} }
+
+/* ---- sekcje dań ---- */
+.group{margin-bottom:26px}
+.group-head{
+  display:flex;align-items:center;gap:10px;margin-bottom:12px;
+}
+.group-head h2{
+  font-family:Bitter,serif;font-size:13px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;
+}
+.group-head .rule{flex:1;height:1px;background:var(--line-strong)}
+.group-head .count{font-size:11px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+
+.grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-left:3px solid var(--line-strong);
+  border-radius:2px;
+  padding:11px 13px;
+  cursor:pointer;
+  display:flex;flex-direction:column;gap:5px;
+  transition:border-color .14s, background .14s;
+  text-align:left;font:inherit;color:inherit;width:100%;
+}
+.card:hover{border-color:var(--line-strong)}
+.card:focus-visible{outline:2px solid var(--beet);outline-offset:2px}
+.card.on{border-color:var(--beet);border-left-color:var(--beet);background:var(--beet-soft)}
+.card-name{font-weight:600;font-size:15px;line-height:1.3}
+.card-meta{
+  font-size:11.5px;color:var(--muted);font-weight:500;
+  font-variant-numeric:tabular-nums;display:flex;gap:9px;flex-wrap:wrap;
+}
+.card.on .card-meta{color:var(--beet)}
+.badge{
+  display:inline-block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  font-weight:700;color:var(--herb);border:1px solid var(--herb);
+  padding:1px 5px;border-radius:2px;
+}
+.qty{display:flex;align-items:center;gap:8px;margin-top:3px}
+.qty button{
+  width:24px;height:24px;border:1px solid var(--beet);background:var(--surface);
+  color:var(--beet);font:inherit;font-weight:700;line-height:1;border-radius:2px;cursor:pointer;
+}
+.qty button:hover{background:var(--beet);color:#fff}
+.qty span{font-size:12px;font-weight:600;color:var(--beet);font-variant-numeric:tabular-nums}
+.q-batch{
+  width:auto!important;padding:0 7px;font-size:11px!important;
+  border-color:var(--herb)!important;color:var(--herb)!important;margin-left:2px;
+}
+.q-batch:hover{background:var(--herb)!important;color:#fff!important}
+
+/* ---- panel wyników ---- */
+.panel{margin-top:34px;border-top:2px solid var(--ink);padding-top:0}
+.tabs{display:flex;gap:0;margin-bottom:0}
+.tab{
+  font:inherit;font-size:13px;font-weight:600;letter-spacing:.04em;
+  padding:11px 18px;border:1px solid var(--line);border-top:none;
+  background:var(--porcelain);color:var(--muted);cursor:pointer;
+  border-radius:0 0 2px 2px;
+}
+.tab+.tab{border-left:none}
+.tab[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tab:focus-visible{outline:2px solid var(--beet);outline-offset:2px}
+
+.result{
+  background:var(--surface);border:1px solid var(--line);border-top:none;
+  padding:20px 18px;border-radius:0 0 3px 3px;margin-top:-1px;
+}
+.empty{color:var(--muted);font-size:14.5px;padding:20px 0;text-align:center}
+
+/* lista zakupów */
+.shop-group{margin-bottom:20px}
+.shop-group h3{
+  font-family:Bitter,serif;font-size:11px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--beet);
+  padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:8px;
+}
+.item{
+  display:flex;align-items:flex-start;gap:9px;padding:5px 0;
+  border-bottom:1px dotted var(--line);font-size:14.5px;
+}
+.item:last-child{border-bottom:none}
+.item input{
+  width:17px;height:17px;margin-top:3px;flex:none;accent-color:var(--beet);cursor:pointer;
+}
+.item label{cursor:pointer;display:flex;flex:1;gap:10px;justify-content:space-between}
+.item .amt{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:13.5px}
+.item.done label{text-decoration:line-through;color:var(--muted)}
+
+/* przepisy */
+.recipe{padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--line)}
+.recipe:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.recipe h3{font-family:Bitter,serif;font-size:19px;font-weight:700;line-height:1.25}
+.recipe h3 .rep{
+  font-family:Inter,sans-serif;font-size:12px;font-weight:700;vertical-align:middle;
+  color:var(--beet);border:1px solid var(--beet);border-radius:2px;padding:1px 6px;margin-left:4px;
+}
+.recipe .rmeta{font-size:12px;color:var(--muted);font-weight:600;margin:3px 0 12px;font-variant-numeric:tabular-nums}
+.recipe h4{
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--beet);font-weight:700;margin:14px 0 6px;
+}
+.ing{list-style:none}
+.ing li{display:flex;justify-content:space-between;gap:12px;padding:3px 0;font-size:14.5px;border-bottom:1px dotted var(--line)}
+.ing li span{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.recipe ol{padding-left:20px;font-size:14.5px}
+.recipe ol li{padding:3px 0}
+.tip{
+  border-left:3px solid var(--herb);background:#F2F6F2;
+  padding:9px 12px;margin-top:12px;font-size:13.5px;color:#2F4A35;
+}
+
+footer{margin-top:34px;font-size:12.5px;color:var(--muted);line-height:1.6}
+footer strong{color:var(--ink)}
+
+@media print{
+  body{background:#fff;padding:0}
+  .tally,.grid,.tabs,.group-head .count,.tally-clear,footer{display:none}
+  .panel{border:none}
+  .result{border:none;padding:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:520px){
+  .grid{grid-template-columns:1fr}
+  .tab{flex:1;padding:11px 8px;font-size:12.5px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Plan 14-dniowy · stłuszczenie wątroby &amp; WZJG</div>
+  <h1>Planer posiłków</h1>
+  <p class="sub">Zaznacz dania i ustaw, ile porcji chcesz przygotować. Każda porcja to jeden posiłek — lista zakupów i przepisy przeliczą się same.</p>
+</header>
+
+<div class="tally">
+  <div class="tally-top">
+    <div class="stat"><b id="t-days">0</b><span>dni</span></div>
+    <div class="stat"><b id="t-dish">0</b><span>dań</span></div>
+    <div class="stat"><b id="t-kcal">0</b><span>kcal razem</span></div>
+    <div class="stat"><b id="t-prot">0</b><span>g białka razem</span></div>
+    <button class="tally-clear" id="clear">Wyczyść</button>
+  </div>
+  <div class="gauges">
+    <div class="gauge g-kcal">
+      <div class="gauge-label"><span>Kalorie</span><span id="l-kcal">cel 2100 / dzień</span></div>
+      <div class="gauge-track"><div class="gauge-fill" id="f-kcal"></div></div>
+    </div>
+    <div class="gauge g-prot">
+      <div class="gauge-label"><span>Białko</span><span id="l-prot">cel 130 g / dzień</span></div>
+      <div class="gauge-track"><div class="gauge-fill" id="f-prot"></div></div>
+    </div>
+  </div>
+</div>
+
+<section class="days" id="days"></section>
+
+<main id="menu"></main>
+
+<section class="panel">
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab-shop" role="tab" aria-selected="true">Lista zakupów</button>
+    <button class="tab" id="tab-rec" role="tab" aria-selected="false">Przepisy</button>
+  </div>
+  <div class="result" id="result"></div>
+</section>
+
+<footer>
+  <p><strong>Uwaga:</strong> dokument informacyjny, nie stanowi porady medycznej. Wartości są szacunkowe (±10%).</p>
+  <p style="margin-top:6px">Wszystkie dania liczone są na <strong>jedną porcję</strong> — przyciskami −/+ ustawiasz, na ile posiłków gotujesz. Zielony przycisk przy daniach garnkowych ustawia od razu sensowną wielkość partii. Czasy przygotowania dotyczą całego garnka i przy większej liczbie porcji zmieniają się nieznacznie. Suplementy poza planem: kwas foliowy 0,4 mg, omega-3, witamina D.</p>
+</footer>
+
+</div>
+
+<script>
+const K = {
+  m:'Mięso i ryby', w:'Warzywa i grzyby', n:'Nabiał i jaja', p:'Pieczywo',
+  s:'Sypkie i zboża', k:'Puszki i słoiki', z:'Mrożonki', t:'Tłuszcze', x:'Przyprawy i zioła'
+};
+const ORDER = ['m','w','n','p','s','k','z','t','x'];
+
+// [nazwa, ilość, jednostka, kategoria]  — ilość null = "do smaku"
+const DISHES = [
+{g:"Śniadania", n:"Owsianka", kcal:520, prot:24, por:1, time:"10 min",
+ ing:[["Płatki owsiane górskie",70,"g","s"],["Mleko 2%",250,"ml","n"],["Otręby owsiane",10,"g","s"],["Siemię lniane mielone",10,"g","s"],["Orzechy mieszane niesolone",20,"g","s"],["Cynamon",null,"","x"]],
+ steps:["Płatki zalej mlekiem i gotuj na małym ogniu 7–10 minut, często mieszając.","Jeśli owsianka jest zbyt gęsta, dolej odrobinę wody; zbyt rzadka — gotuj chwilę dłużej.","Zdejmij z ognia, wmieszaj otręby i siemię lniane.","Posyp cynamonem i orzechami."],
+ tip:"Beta-glukan z owsa to błonnik rozpuszczalny — dobrze tolerowany przez jelito i korzystny dla wątroby."},
+
+{g:"Śniadania", n:"Tosty z jajkiem sadzonym", kcal:600, prot:32, por:1, time:"15 min",
+ ing:[["Chleb razowy",3,"kromka","p"],["Awokado",0.5,"szt.","w"],["Jajka",3,"szt.","n"],["Rukola",20,"g","w"],["Natka pietruszki",null,"","w"]],
+ steps:["Pieczywo opiecz w tosterze lub na patelni.","Awokado obierz i rozsmaruj na kromkach.","Na suchej, rozgrzanej patelni pod przykryciem usmaż jajka sadzone. Dopraw solą i pieprzem.","Na kanapkach ułóż rukolę i jajka, posyp natką."],
+ tip:"Awokado kupuj twarde — dojrzeje na blacie w 3–5 dni. Chcesz przyspieszyć? Włóż do papierowej torby z jabłkiem."},
+
+{g:"Śniadania", n:"Twaróg z warzywami", kcal:480, prot:36, por:1, time:"5 min",
+ ing:[["Twaróg półtłusty",150,"g","n"],["Jogurt grecki",2,"łyżka","n"],["Chleb razowy",2,"kromka","p"],["Rzodkiewki",5,"szt.","w"],["Ogórek",0.5,"szt.","w"],["Szczypiorek",null,"","w"]],
+ steps:["Twaróg rozgnieć widelcem i wymieszaj z jogurtem na gładką masę.","Dopraw solą, pieprzem i posiekanym szczypiorkiem.","Podawaj z pieczywem, rzodkiewkami i ogórkiem."]},
+
+{g:"Śniadania", n:"Jajecznica ze szpinakiem", kcal:530, prot:28, por:1, time:"10 min",
+ ing:[["Jajka",3,"szt.","n"],["Szpinak mrożony",80,"g","z"],["Oliwa",1,"łyżka","t"],["Chleb razowy",2,"kromka","p"],["Pomidor",1,"szt.","w"],["Szczypiorek",null,"","w"]],
+ steps:["Na oliwie rozgrzej szpinak, aż odparuje nadmiar wody (2–3 minuty).","Wbij jajka, dopraw i smaż na małym ogniu, mieszając.","Podawaj z pieczywem, pomidorem i szczypiorkiem."],
+ tip:"Szpinak i jaja to dobre źródła folianów — istotne przy sulfasalazynie."},
+
+{g:"Śniadania", n:"Szakszuka z mozzarellą", kcal:560, prot:32, por:1, time:"25 min", wknd:true,
+ ing:[["Jajka",2,"szt.","n"],["Cebula",1,"szt.","w"],["Papryka",1,"szt.","w"],["Passata pomidorowa",200,"ml","k"],["Mozzarella",60,"g","n"],["Czosnek",1,"ząbek","w"],["Oliwa",1,"łyżka","t"],["Chleb razowy",2,"kromka","p"],["Papryka słodka",null,"","x"],["Kmin rzymski",null,"","x"]],
+ steps:["Cebulę i paprykę pokrój w kostkę. Zeszklij na oliwie ok. 5 minut.","Dodaj przeciśnięty czosnek, słodką paprykę i kmin. Smaż 30 sekund, mieszając.","Wlej passatę, dopraw. Duś na małym ogniu 10 minut, aż sos zgęstnieje.","Łyżką zrób w sosie dwa wgłębienia i wbij w nie jajka.","Przykryj i gotuj 5–6 minut, aż białka się zetną, a żółtka zostaną płynne.","Porozrzucaj kawałki mozzarelli, przykryj jeszcze na minutę.","Posyp natką, podawaj z chlebem do maczania."],
+ tip:"Gęstość sosu decyduje o powodzeniu. Jeśli po 10 minutach jest rzadki — duś dłużej bez przykrycia. Po wbiciu jajek już nie mieszaj."},
+
+{g:"Śniadania", n:"Jajka w koszulkach z pastą twarogową", kcal:540, prot:38, por:1, time:"20 min", wknd:true,
+ ing:[["Jajka",3,"szt.","n"],["Twaróg półtłusty",100,"g","n"],["Mleko 2%",30,"ml","n"],["Czosnek",1,"ząbek","w"],["Oliwa",1,"łyżka","t"],["Chleb razowy",2,"kromka","p"],["Papryka słodka",null,"","x"],["Koperek",null,"","w"]],
+ steps:["Twaróg rozetrzyj z mlekiem i roztartym czosnkiem na gładką pastę. Dopraw solą.","Pieczywo opiecz i rozsmaruj na nim pastę.","Zagotuj wodę z łyżką octu, zrób wir i wbijaj jajka pojedynczo. Gotuj 3 minuty.","Wyjmij łyżką cedzakową, odsącz i ułóż na grzankach.","Oliwę wymieszaj z papryką słodką, polej wierzch, posyp koperkiem."]},
+
+{g:"Śniadania", n:"Pasta jajeczna z awokado", kcal:580, prot:29, por:1, time:"15 min",
+ ing:[["Jajka",3,"szt.","n"],["Awokado",0.5,"szt.","w"],["Chleb razowy",3,"kromka","p"],["Jogurt grecki",1,"łyżka","n"],["Szczypiorek",null,"","w"],["Rzodkiewki",3,"szt.","w"]],
+ steps:["Jajka ugotuj na twardo (9 minut), ostudź w zimnej wodzie i obierz.","Awokado rozgnieć widelcem, wymieszaj z jogurtem, solą i pieprzem.","Jajka posiekaj i wmieszaj do pasty. Dodaj szczypiorek.","Rozsmaruj na pieczywie, podawaj z rzodkiewkami."],
+ tip:"Skrop pastę cytryną — awokado nie ściemnieje, a smak się rozjaśni."},
+
+{g:"Śniadania", n:"Kanapki z pastą z tuńczyka", kcal:500, prot:45, por:1, time:"10 min",
+ ing:[["Tuńczyk w wodzie",1,"puszka","k"],["Twaróg półtłusty",80,"g","n"],["Chleb razowy",3,"kromka","p"],["Cebula czerwona",0.25,"szt.","w"],["Ogórek kiszony",1,"szt.","w"],["Szczypiorek",null,"","w"]],
+ steps:["Tuńczyka odsącz i rozgnieć widelcem.","Wymieszaj z twarogiem na gładką pastę, dopraw pieprzem.","Dodaj drobno posiekaną cebulę i szczypiorek.","Rozsmaruj na pieczywie, podawaj z ogórkiem kiszonym."],
+ tip:"Najwięcej białka ze wszystkich śniadań w planie — 45 g przy zaledwie 500 kcal."},
+
+{g:"Obiady", n:"Gulasz z kaszą gryczaną", kcal:690, prot:50, por:1, time:"90 min", batch:3,
+ ing:[["Mięso gulaszowe (wieprz. lub wołowe)",233.3333,"g","m"],["Cebula",0.6667,"szt.","w"],["Czosnek",0.6667,"ząbek","w"],["Marchew",1,"szt.","w"],["Papryka",0.3333,"szt.","w"],["Passata pomidorowa",100,"ml","k"],["Kasza gryczana",1,"torebka","s"],["Kapusta kiszona",66.6667,"g","w"],["Oliwa rafinowana",0.3333,"łyżka","t"],["Papryka słodka",null,"","x"],["Liść laurowy, ziele angielskie",null,"","x"]],
+ steps:["Mięso osusz i obsmaż na oliwie partiami, aż się zarumieni. Nie wrzucaj wszystkiego naraz.","Dodaj posiekaną cebulę, zeszklij, wrzuć czosnek.","Dorzuć marchew w plastrach i paprykę w kostce, wsyp słodką paprykę.","Wlej passatę i ok. 200 ml wody, dorzuć liść laurowy i ziele.","Duś pod przykryciem 70–90 minut (wołowina 1,5–2 h).","Dopraw. Podawaj z kaszą gryczaną i surówką z kiszonej kapusty."],
+ tip:"Cook4Me: podsmażanie, potem 20–25 min pod ciśnieniem (wołowina 30–35 min). Wlej tylko 150 ml wody. Rozprężanie naturalne. Odetnij widoczny tłuszcz przed obsmażeniem."},
+
+{g:"Obiady", n:"Barszcz ukraiński z fasolą", kcal:640, prot:38, por:1, time:"90 min", batch:3,
+ ing:[["Mięso gulaszowe (wieprz. lub wołowe)",133.3333,"g","m"],["Buraki",200,"g","w"],["Marchew",0.6667,"szt.","w"],["Pietruszka korzeń",0.3333,"szt.","w"],["Ziemniaki",0.6667,"szt.","w"],["Kapusta biała",100,"g","w"],["Czosnek",0.6667,"ząbek","w"],["Cytryna",0.1667,"szt.","w"],["Fasola czerwona",0.3333,"puszka","k"],["Passata pomidorowa",66.6667,"ml","k"],["Jogurt grecki",1,"łyżka","n"],["Chleb razowy",1,"kromka","p"],["Majeranek, liść laurowy",null,"","x"]],
+ steps:["Ugotuj wywar na mięsie (ok. 60 minut). Wyjmij mięso i pokrój.","Do wywaru dodaj starte buraki, marchew, pietruszkę, ziemniaki w kostce i kapustę w paskach.","Wlej passatę i gotuj ok. 25 minut, aż warzywa zmiękną.","Dodaj odsączoną fasolę i mięso.","Zakwaś sokiem z cytryny, dopraw czosnkiem, majerankiem, solą i pieprzem.","Podawaj z łyżką jogurtu i kromką razowego chleba."],
+ tip:"Cook4Me — dwa etapy: mięso 25 min, otwórz, warzywa kolejne 6–8 min. Fasolę, cytrynę i mięso dodaj po otwarciu. Buraki i fasola to najlepsze źródło folianów w całym planie."},
+
+{g:"Obiady", n:"Wieprzowina w sosie chrzanowym", kcal:500, prot:35, por:1, time:"65 min", batch:2,
+ ing:[["Szynka wieprzowa (chuda)",100,"g","m"],["Ziemniaki",200,"g","w"],["Czosnek",1,"ząbek","w"],["Bulion warzywny",125,"ml","k"],["Chrzan tarty",20,"g","k"],["Jogurt grecki",75,"g","n"],["Fasolka szparagowa mrożona",150,"g","z"],["Oliwa",0.5,"łyżeczka","t"],["Koperek, natka",null,"","w"]],
+ steps:["Mięso pokrój na mniejsze kawałki i rozbij tłuczkiem. Oprósz solą i pieprzem.","W garnku podsmaż na oliwie starty czosnek, wlej bulion i zagotuj.","Osobno obsmaż mięso na suchej, dobrze rozgrzanej patelni.","Przełóż do gotującego bulionu, przykryj i gotuj 40–50 minut. Po 20 minutach dodaj chrzan.","Ziemniaki ugotuj i utłucz na puree. Fasolkę ugotuj osobno.","Zdejmij garnek z ognia. Zahartuj jogurt kilkoma łyżkami bulionu i wmieszaj razem z koperkiem.","Podawaj z puree i fasolką, posyp natką."],
+ tip:"Nabiał zawsze po zdjęciu z ognia — jogurt wrzucony do wrzątku się zwarzy. Chrzan pod ciśnieniem traci ostrość, więc w Cook4Me dodaj go po otwarciu (18–20 min)."},
+
+{g:"Obiady", n:"Polędwiczka z pieczarkami i boczniakami", kcal:660, prot:55, por:1, time:"30 min", batch:2,
+ ing:[["Polędwiczka wieprzowa",250,"g","m"],["Pieczarki",125,"g","w"],["Boczniaki",75,"g","w"],["Cebula",1,"szt.","w"],["Czosnek",0.5,"ząbek","w"],["Kapusta kiszona",75,"g","w"],["Jogurt grecki",1,"łyżka","n"],["Bulion warzywny",50,"ml","k"],["Kasza gryczana",1,"torebka","s"],["Oliwa",0.5,"łyżka","t"],["Tymianek",null,"","x"]],
+ steps:["Polędwiczkę pokrój w medaliony ok. 2 cm, oprósz solą i pieprzem.","Obsmaż na oliwie po 2–3 minuty z każdej strony i odłóż.","Na tej samej patelni podsmaż cebulę, pieczarki i boczniaki — aż odparuje woda.","Dodaj czosnek i tymianek, wlej bulion i zagotuj.","Zdejmij z ognia i zabiel jogurtem.","Włóż mięso z powrotem na 2 minuty. Podawaj z kaszą i surówką."],
+ tip:"Polędwiczka ma ok. 3% tłuszczu — najchudsze mięso wieprzowe. Nie przesmażaj: w środku ma zostać lekko różowa."},
+
+{g:"Obiady", n:"Kurczak po tajsku", kcal:730, prot:50, por:1, time:"25 min", batch:2,
+ ing:[["Pierś z kurczaka",250,"g","m"],["Cebula",0.5,"szt.","w"],["Czosnek",1,"ząbek","w"],["Imbir świeży",10,"g","w"],["Marchew",1,"szt.","w"],["Papryka",0.5,"szt.","w"],["Cytryna",0.25,"szt.","w"],["Mleko kokosowe light",200,"ml","k"],["Pasta curry",1,"łyżka","k"],["Sos sojowy",0.5,"łyżka","k"],["Fasolka szparagowa mrożona",75,"g","z"],["Ryż basmati",50,"g","s"],["Oliwa rafinowana",0.5,"łyżka","t"],["Natka lub kolendra",null,"","w"]],
+ steps:["Nastaw ryż — basmati gotuje się ok. 12 minut.","Pierś pokrój w paski 1,5 cm. Obsmaż na rozgrzanej oliwie 3–4 minuty i wyjmij.","Zeszklij cebulę (2 min), dodaj czosnek i starty imbir, smaż 30 sekund.","Wsyp pastę curry i smaż minutę, cały czas mieszając.","Dodaj marchew w cienkich słupkach i paprykę. Smaż 2 minuty.","Wlej mleko kokosowe, wrzuć mięso i fasolkę. Duś 12–15 minut bez przykrycia.","Zdejmij z ognia. Dopraw sosem sojowym i sokiem z cytryny. Spróbuj i dopraw.","Podawaj z ryżem, posypane natką."],
+ tip:"Pastę curry koniecznie podsmaż w tłuszczu — wrzucona prosto do mleka będzie płaska. Kwas dodawaj na końcu. Wybieraj mleko bez dodatków lub z gumą guar (E412), unikaj karagenu (E407)."},
+
+{g:"Obiady", n:"Dorsz po grecku", kcal:620, prot:45, por:1, time:"40 min", batch:2,
+ ing:[["Filet z dorsza (lub mintaj)",200,"g","m"],["Marchew",250,"g","w"],["Cebula",0.5,"szt.","w"],["Pietruszka korzeń",0.5,"szt.","w"],["Cytryna",0.25,"szt.","w"],["Ziemniaki",200,"g","w"],["Passata pomidorowa",125,"ml","k"],["Oliwa",1,"łyżka","t"],["Liść laurowy, papryka słodka",null,"","x"]],
+ steps:["Filety pokrój, dopraw, skrop cytryną. Upiecz w 200°C przez 15 minut.","Marchew i pietruszkę zetrzyj na tarce. Zeszklij na oliwie z cebulą.","Dodaj passatę, liść laurowy i słodką paprykę. Duś ok. 20 minut.","Rybę przełóż warstwą warzyw.","Podawaj ciepłe lub na zimno, z ziemniakami albo pieczywem."],
+ tip:"Trzyma się 3–4 dni i z dnia na dzień smakuje lepiej. Dorsz i mintaj to ryby dziko poławiane — szukaj oznaczenia MSC."},
+
+{g:"Obiady", n:"Klopsiki w sosie pomidorowym", kcal:590, prot:38, por:1, time:"45 min", batch:3,
+ ing:[["Mięso mielone wołowo-wieprzowe",166.6667,"g","m"],["Jajka",0.3333,"szt.","n"],["Bułka tarta",10,"g","s"],["Cebula",0.6667,"szt.","w"],["Czosnek",0.6667,"ząbek","w"],["Passata pomidorowa",166.6667,"ml","k"],["Ziemniaki",200,"g","w"],["Oliwa rafinowana",0.6667,"łyżka","t"],["Majeranek, oregano",null,"","x"],["Natka",null,"","w"]],
+ steps:["Mięso wymieszaj z jajkiem, bułką tartą i drobno startą cebulą. Dopraw solą, pieprzem i majerankiem.","Uformuj klopsiki wielkości orzecha włoskiego. Wilgotne dłonie ułatwiają formowanie.","Obsmaż je na oliwie ze wszystkich stron i odłóż.","Na tej samej patelni zeszklij drugą cebulę z czosnkiem, wlej passatę i oregano.","Włóż klopsiki do sosu i duś pod przykryciem 20 minut.","Ziemniaki ugotuj i utłucz na puree. Podawaj z klopsikami i natką."],
+ tip:"Cook4Me: obsmaż na trybie podsmażania, potem 10 minut pod ciśnieniem. Klopsiki świetnie się mrożą — porcję na trzeci dzień odłóż od razu do zamrażarki."},
+
+{g:"Obiady", n:"Fasolka po bretońsku z indykiem", kcal:570, prot:48, por:1, time:"40 min", batch:3,
+ ing:[["Pierś z indyka",133.3333,"g","m"],["Fasola biała",1,"puszka","k"],["Passata pomidorowa",133.3333,"ml","k"],["Cebula",0.6667,"szt.","w"],["Czosnek",0.6667,"ząbek","w"],["Chleb razowy",1,"kromka","p"],["Oliwa rafinowana",0.6667,"łyżka","t"],["Majeranek, papryka słodka, liść laurowy",null,"","x"]],
+ steps:["Indyka pokrój w kostkę i obsmaż na oliwie do zarumienienia.","Dodaj posiekaną cebulę i czosnek, zeszklij.","Wlej passatę, dodaj majeranek, słodką paprykę i liść laurowy. Duś 15 minut.","Fasolę odsącz, przepłucz i wrzuć do garnka. Duś jeszcze 10 minut.","Dopraw i podawaj z kromką razowego chleba."],
+ tip:"Fasola to jedno z najlepszych źródeł folianów — przy sulfasalazynie danie warte częstszego powtarzania. Trzyma się w lodówce 4 dni."},
+
+{g:"Obiady", n:"Pieczony schab z warzywami korzeniowymi", kcal:690, prot:55, por:1, time:"75 min", batch:3,
+ ing:[["Schab wieprzowy",233.3333,"g","m"],["Marchew",1.3333,"szt.","w"],["Pietruszka korzeń",0.6667,"szt.","w"],["Seler",66.6667,"g","w"],["Ziemniaki",200,"g","w"],["Czosnek",1,"ząbek","w"],["Oliwa",1,"łyżka","t"],["Majeranek, tymianek",null,"","x"]],
+ steps:["Schab natrzyj oliwą, roztartym czosnkiem, majerankiem, solą i pieprzem. Zostaw na 20 minut.","Warzywa korzeniowe i ziemniaki pokrój w grubą kostkę, wymieszaj z oliwą i tymiankiem.","Rozłóż warzywa w brytfannie, na wierzchu ułóż mięso.","Piecz w 180°C przez 55–65 minut. Po drodze raz przemieszaj warzywa.","Wyjmij i odstaw mięso na 10 minut przed krojeniem."],
+ tip:"Schab jest chudy i łatwo go przesuszyć — najlepiej sprawdzić termometrem: 65–68°C w środku i wyjmować. Zimny schab następnego dnia jest świetny na kanapki."},
+
+{g:"Dania azjatyckie", n:"Wołowina z brokułami po chińsku", kcal:680, prot:60, por:1, time:"25 min", batch:2,
+ ing:[["Wołowina (udziec lub rostbef)",250,"g","m"],["Brokuł",0.5,"szt.","w"],["Cebula",0.5,"szt.","w"],["Czosnek",1.5,"ząbek","w"],["Imbir świeży",10,"g","w"],["Sos sojowy",1.5,"łyżka","k"],["Ryż basmati",50,"g","s"],["Olej rzepakowy",1,"łyżka","t"],["Sezam",null,"","x"]],
+ steps:["Wołowinę pokrój w cienkie paski w poprzek włókien — to klucz do miękkości.","Zamarynuj mięso w łyżce sosu sojowego przez 15 minut. W tym czasie ugotuj ryż.","Brokuł podziel na różyczki i zblanszuj 3 minuty we wrzątku, potem przelej zimną wodą.","Rozgrzej patelnię lub wok bardzo mocno. Smaż mięso partiami po 2 minuty i wyjmij.","Na tym samym tłuszczu smaż cebulę, czosnek i imbir 30 sekund.","Wrzuć brokuł i mięso, wlej resztę sosu sojowego, smaż jeszcze minutę.","Posyp sezamem i podawaj z ryżem."],
+ tip:"Sekret stir-fry to bardzo gorąca patelnia i smażenie partiami. Wrzucone naraz mięso puści wodę i będzie się dusić zamiast rumienić."},
+
+{g:"Dania azjatyckie", n:"Smażony ryż z kurczakiem i jajkiem", kcal:620, prot:46, por:1, time:"20 min", batch:2,
+ ing:[["Pierś z kurczaka",150,"g","m"],["Jajka",1.5,"szt.","n"],["Ryż basmati",60,"g","s"],["Marchew",0.5,"szt.","w"],["Cebula",0.5,"szt.","w"],["Czosnek",1,"ząbek","w"],["Groszek zielony mrożony",75,"g","z"],["Sos sojowy",1,"łyżka","k"],["Olej rzepakowy",1,"łyżka","t"],["Szczypiorek",null,"","w"]],
+ steps:["Ryż ugotuj dzień wcześniej i schłodź w lodówce — świeży, ciepły ryż się zlepi.","Kurczaka pokrój w kostkę i obsmaż na mocno rozgrzanym oleju. Wyjmij.","Roztrzepane jajka wlej na patelnię, zetnij mieszając i wyjmij.","Smaż cebulę, marchew w drobnej kostce i czosnek 3 minuty. Dodaj groszek.","Wsyp zimny ryż, rozbij grudki i smaż 3–4 minuty, aż się rozgrzeje.","Wrzuć mięso i jajka z powrotem, wlej sos sojowy, wymieszaj.","Posyp szczypiorkiem."],
+ tip:"To najlepszy sposób na wykorzystanie ryżu, który został z poprzedniego dania — zero marnowania. Ugotuj większą partię ryżu przy kurczaku po tajsku."},
+
+{g:"Dania azjatyckie", n:"Tom kha gai — kokosowa zupa z kurczakiem", kcal:480, prot:36, por:1, time:"30 min", batch:3,
+ ing:[["Pierś z kurczaka",150,"g","m"],["Mleko kokosowe light",133.3333,"ml","k"],["Bulion warzywny",200,"ml","k"],["Pieczarki",66.6667,"g","w"],["Imbir świeży",10,"g","w"],["Czosnek",0.6667,"ząbek","w"],["Cytryna",0.3333,"szt.","w"],["Marchew",0.3333,"szt.","w"],["Sos sojowy",0.3333,"łyżka","k"],["Ryż basmati",50,"g","s"],["Kolendra lub natka",null,"","w"],["Papryka ostra",null,"","x"]],
+ steps:["Ugotuj ryż osobno.","Bulion zagotuj z plastrami imbiru i rozgniecionym czosnkiem, gotuj 5 minut.","Dodaj kurczaka pokrojonego w paski i marchew w cienkich plastrach. Gotuj 8 minut.","Wrzuć pieczarki pokrojone w plastry, gotuj kolejne 3 minuty.","Wlej mleko kokosowe i podgrzej, ale nie gotuj mocno — ma tylko pyrkać.","Zdejmij z ognia, dopraw sokiem z cytryny, sosem sojowym i szczyptą ostrej papryki.","Podawaj z ryżem, posypane kolendrą."],
+ tip:"Sok z cytryny dodawaj zawsze po zdjęciu z ognia — kwas w gotującym się mleku kokosowym powoduje rozwarstwienie."},
+
+{g:"Dania azjatyckie", n:"Wieprzowina w sosie sojowo-imbirowym", kcal:600, prot:58, por:1, time:"25 min", batch:2,
+ ing:[["Polędwiczka wieprzowa",250,"g","m"],["Papryka",0.5,"szt.","w"],["Marchew",1,"szt.","w"],["Cebula",0.5,"szt.","w"],["Czosnek",1.5,"ząbek","w"],["Imbir świeży",12.5,"g","w"],["Sos sojowy",1.5,"łyżka","k"],["Fasolka szparagowa mrożona",75,"g","z"],["Ryż basmati",50,"g","s"],["Olej rzepakowy",0.75,"łyżka","t"],["Sezam",null,"","x"]],
+ steps:["Ugotuj ryż. Polędwiczkę pokrój w cienkie plastry i zamarynuj w łyżce sosu sojowego.","Warzywa pokrój w słupki — mają zostać chrupiące, więc im cieńsze, tym lepiej.","Na mocno rozgrzanym oleju obsmaż mięso partiami po 2 minuty. Wyjmij.","Smaż czosnek i imbir 30 sekund, dodaj cebulę, marchew i paprykę. Smaż 3 minuty.","Dorzuć fasolkę, wrzuć mięso z powrotem, wlej resztę sosu sojowego.","Smaż jeszcze minutę, posyp sezamem. Podawaj z ryżem."],
+ tip:"Nie dosalaj — sos sojowy jest bardzo słony. Jeśli chcesz łagodniej, użyj wersji o obniżonej zawartości sodu."},
+
+{g:"Dania azjatyckie", n:"Indyk w sosie orzechowym (satay)", kcal:690, prot:58, por:1, time:"30 min", batch:2,
+ ing:[["Filet z indyka",250,"g","m"],["Masło orzechowe bez cukru",20,"g","s"],["Mleko kokosowe light",100,"ml","k"],["Czosnek",1,"ząbek","w"],["Imbir świeży",10,"g","w"],["Sos sojowy",1,"łyżka","k"],["Cytryna",0.25,"szt.","w"],["Marchew",1,"szt.","w"],["Papryka",0.5,"szt.","w"],["Ryż basmati",50,"g","s"],["Olej rzepakowy",0.5,"łyżka","t"],["Papryka ostra",null,"","x"]],
+ steps:["Ugotuj ryż. Indyka pokrój w kostkę.","Obsmaż mięso na oleju na mocnym ogniu 4–5 minut, aż się zarumieni. Wyjmij.","Na tej samej patelni smaż czosnek i imbir 30 sekund, dodaj marchew w słupkach i paprykę, smaż 3 minuty.","Zmniejsz ogień. Wmieszaj masło orzechowe, wlej mleko kokosowe i sos sojowy. Mieszaj, aż sos będzie gładki.","Wrzuć mięso z powrotem i duś 5 minut.","Zdejmij z ognia, dopraw sokiem z cytryny i szczyptą ostrej papryki. Podawaj z ryżem."],
+ tip:"Masło orzechowe musi być bez cukru — czytaj skład, bo większość popularnych marek ma dodany cukier i olej palmowy. Skład powinien brzmieć: orzeszki 100%."},
+
+{g:"Kolacje", n:"Zupa pomidorowa z ryżem", kcal:480, prot:30, por:1, time:"50 min", batch:3,
+ ing:[["Udka z kurczaka",0.6667,"szt.","m"],["Marchew",0.6667,"szt.","w"],["Pietruszka korzeń",0.3333,"szt.","w"],["Seler",33.3333,"g","w"],["Por",0.3333,"szt.","w"],["Passata pomidorowa",166.6667,"ml","k"],["Ryż basmati",33.3333,"g","s"],["Jogurt grecki",1,"łyżka","n"],["Natka",null,"","w"]],
+ steps:["Ugotuj wywar z udek i włoszczyzny (ok. 40 minut). Wyjmij mięso i obierz z kości.","Wlej passatę do wywaru, zagotuj i dopraw.","Ryż ugotuj osobno.","Podawaj z ryżem, kawałkami mięsa, łyżką jogurtu i natką."],
+ tip:"Gotujesz jeden garnek na 3 kolacje — jedną porcję od razu zamroź."},
+
+{g:"Kolacje", n:"Krem marchewkowy z ryżem", kcal:590, prot:32, por:1, time:"35 min", batch:3,
+ ing:[["Pierś z kurczaka",100,"g","m"],["Marchew",233.3333,"g","w"],["Ziemniaki",66.6667,"g","w"],["Ryż basmati",33.3333,"g","s"],["Bulion warzywny",333.3333,"ml","k"],["Jogurt grecki",1,"łyżka","n"],["Oliwa",1,"łyżka","t"],["Majeranek, biały pieprz",null,"","x"],["Natka",null,"","w"]],
+ steps:["Marchew pokrój w cienkie plasterki, ziemniaki w kostkę ok. 1,5 cm.","Ryż wypłucz na sitku pod zimną wodą.","Do garnka wlej bulion. Dodaj mięso, marchew, ziemniaki i ryż. Gotuj 20 minut pod częściowym przykryciem.","Wyjmij mięso i podziel na kawałki.","Zblenduj zupę na gładki krem razem z oliwą. Za gęsta — dolej ciepłej wody.","Włóż mięso z powrotem, dopraw. Odstaw pod przykryciem na 1–2 minuty.","Przed podaniem udekoruj jogurtem i natką."],
+ tip:"Danie awaryjne na wypadek zaostrzenia WZJG: przetarte, bez błonnika nierozpuszczalnego, z pełnowartościowym białkiem. Cook4Me: 8 minut."},
+
+{g:"Kolacje", n:"Omlet z pieczarkami", kcal:500, prot:27, por:1, time:"15 min",
+ ing:[["Jajka",3,"szt.","n"],["Pieczarki",100,"g","w"],["Cebula",0.5,"szt.","w"],["Szpinak mrożony",50,"g","z"],["Oliwa",1,"łyżka","t"],["Chleb razowy",1,"kromka","p"]],
+ steps:["Pieczarki i cebulę pokrój, podsmaż na oliwie aż odparuje woda. Dodaj szpinak.","Jajka roztrzep widelcem, dopraw i wlej na patelnię.","Smaż na małym ogniu pod przykryciem, aż masa się zetnie. Złóż na pół.","Podawaj z kromką pieczywa."]},
+
+{g:"Kolacje", n:"Sałatka z tuńczykiem i jajkiem", kcal:540, prot:45, por:1, time:"15 min",
+ ing:[["Tuńczyk w wodzie",1,"puszka","k"],["Jajka",2,"szt.","n"],["Fasola czerwona",0.5,"puszka","k"],["Ogórek",1,"szt.","w"],["Pomidor",1,"szt.","w"],["Cebula czerwona",0.25,"szt.","w"],["Cytryna",0.25,"szt.","w"],["Oliwa extra virgin",1,"łyżka","t"],["Chleb razowy",1,"kromka","p"]],
+ steps:["Jajka ugotuj na twardo (8–9 minut), ostudź i pokrój.","Warzywa pokrój, fasolę odsącz i przepłucz.","Wymieszaj wszystko z odsączonym tuńczykiem.","Polej oliwą i sokiem z cytryny, dopraw. Podawaj z pieczywem."]},
+
+{g:"Kolacje", n:"Grillowany indyk z halloumi", kcal:580, prot:46, por:1, time:"20 min", wknd:true,
+ ing:[["Filet z indyka",150,"g","m"],["Halloumi",60,"g","n"],["Pomidor",1,"szt.","w"],["Rukola",25,"g","w"],["Czosnek",1,"ząbek","w"],["Cytryna",0.25,"szt.","w"],["Chleb razowy",2,"kromka","p"],["Oliwa",1,"łyżka","t"],["Tymianek lub rozmaryn",null,"","x"]],
+ steps:["Filet rozkrój wzdłuż na dwa cieńsze płaty albo rozbij do grubości 1,5 cm. Osusz ręcznikiem.","Natrzyj oliwą, czosnkiem i tymiankiem. Sól i pieprz dodaj tuż przed grillowaniem.","Rozgrzej grillownicę do końca. Połóż mięso, zamknij pokrywę, nie dociskaj.","Grilluj 6–8 minut, nie otwierając przez pierwsze 4 minuty.","Halloumi namocz 20 minut w wodzie, pokrój w plastry i zgrilluj po 2 minuty.","Mięso odstaw na 5 minut pod odwróconym talerzem.","Chleb zgrilluj na końcu. Podawaj z pomidorem i rukolą polanymi oliwą."],
+ tip:"Indyk jest bardzo chudy i wysycha błyskawicznie. Termometr: 74°C. Namoczenie halloumi usuwa część soli — ten ser ma ok. 2,5–3 g soli na 100 g."},
+
+{g:"Kolacje", n:"Grillowany kurczak caprese", kcal:565, prot:50, por:1, time:"20 min", wknd:true,
+ ing:[["Pierś z kurczaka",150,"g","m"],["Mozzarella",60,"g","n"],["Pomidor",1,"szt.","w"],["Czosnek",1,"ząbek","w"],["Bazylia świeża",null,"","w"],["Chleb razowy",2,"kromka","p"],["Oliwa",1,"łyżka","t"],["Oregano",null,"","x"]],
+ steps:["Pierś przekrój wzdłuż na dwa cieńsze płaty. Natrzyj oliwą i oregano.","Grilluj po ok. 4 minuty z każdej strony (w grillownicy 6–7 minut).","Pod koniec połóż plastry mozzarelli i pomidora, przykryj na 2 minuty.","Posyp świeżą bazylią.","Chleb zgrilluj i natrzyj przekrojonym ząbkiem czosnku."]},
+
+{g:"Kolacje", n:"Krupnik z kaszą jęczmienną", kcal:430, prot:30, por:1, time:"60 min", batch:3,
+ ing:[["Udka z kurczaka",0.6667,"szt.","m"],["Kasza jęczmienna",40,"g","s"],["Marchew",0.6667,"szt.","w"],["Pietruszka korzeń",0.3333,"szt.","w"],["Seler",33.3333,"g","w"],["Por",0.3333,"szt.","w"],["Ziemniaki",100,"g","w"],["Natka, koperek",null,"","w"],["Liść laurowy, ziele angielskie",null,"","x"]],
+ steps:["Ugotuj wywar z udek, liścia laurowego i ziela (ok. 40 minut). Wyjmij mięso i obierz z kości.","Warzywa pokrój w kostkę, ziemniaki nieco większą.","Wrzuć warzywa i przepłukaną kaszę do wywaru. Gotuj 20 minut, aż kasza zmięknie.","Dodaj mięso, dopraw solą i pieprzem.","Podawaj posypane natką i koperkiem."],
+ tip:"Kasza jęczmienna pęcznieje jeszcze w lodówce — następnego dnia dolej trochę wody przy odgrzewaniu. Cook4Me: wywar 20 min, potem warzywa i kasza 8 min."},
+
+{g:"Kolacje", n:"Sałatka grecka z grillowanym kurczakiem", kcal:590, prot:44, por:1, time:"20 min",
+ ing:[["Pierś z kurczaka",150,"g","m"],["Ser feta",50,"g","n"],["Pomidor",1,"szt.","w"],["Ogórek",1,"szt.","w"],["Papryka",0.5,"szt.","w"],["Cebula czerwona",0.25,"szt.","w"],["Oliwki czarne",30,"g","k"],["Oliwa extra virgin",1,"łyżka","t"],["Cytryna",0.25,"szt.","w"],["Chleb razowy",1,"kromka","p"],["Oregano",null,"","x"]],
+ steps:["Pierś przekrój wzdłuż na dwa cieńsze płaty, natrzyj oliwą i oregano.","Grilluj po 4 minuty z każdej strony (w grillownicy 6–7 minut). Odstaw na 5 minut i pokrój.","Warzywa pokrój w grubą kostkę, cebulę w cienkie piórka.","Wymieszaj z oliwkami, polej oliwą i sokiem z cytryny.","Na wierzchu ułóż kurczaka i pokruszoną fetę, posyp oregano. Podawaj z pieczywem."],
+ tip:"Feta jest słona — nie dosalaj sałatki. Jeśli chcesz zbić sól, przepłucz ser zimną wodą przed pokruszeniem."}
+];
+
+const sel = new Map(); // index -> mnożnik
+let tab = 'shop';
+
+const fmt = n => {
+  const r = Math.round(n*100)/100;
+  return String(r).replace('.', ',');
+};
+
+// ilość + jednostka, z sensownym zaokrągleniem
+function amount(qty, unit){
+  if(qty === null) return 'do smaku';
+  if(unit === 'g'){
+    if(qty >= 1000) return fmt(Math.round(qty/10)/100)+' kg';
+    return Math.round(qty)+' g';
+  }
+  if(unit === 'ml'){
+    if(qty >= 1000) return fmt(Math.round(qty/10)/100)+' l';
+    return Math.round(qty)+' ml';
+  }
+  return fmt(qty)+(unit?' '+unit:'');
+}
+
+// --- render menu ---
+const menu = document.getElementById('menu');
+const groups = [...new Set(DISHES.map(d=>d.g))];
+groups.forEach(g=>{
+  const items = DISHES.map((d,i)=>({d,i})).filter(o=>o.d.g===g);
+  const sec = document.createElement('section');
+  sec.className = 'group';
+  sec.innerHTML = `<div class="group-head"><h2>${g}</h2><div class="rule"></div><div class="count">${items.length}</div></div>`;
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  items.forEach(({d,i})=>{
+    const b = document.createElement('button');
+    b.className = 'card';
+    b.type = 'button';
+    b.dataset.i = i;
+    b.setAttribute('aria-pressed','false');
+    grid.appendChild(b);
+  });
+  sec.appendChild(grid);
+  menu.appendChild(sec);
+});
+
+function cardHTML(d, i){
+  const m = sel.get(i);
+  const batch = d.batch ? `<span>garnek na ${d.batch}</span>` : '';
+  return `
+    <span class="card-name">${d.n}${d.wknd?' <span class="badge">weekend</span>':''}</span>
+    <span class="card-meta"><span>${d.kcal} kcal</span><span>${d.prot} g białka</span><span>${d.time}</span>${batch}</span>
+    ${m ? `<span class="qty"><button type="button" data-act="minus" aria-label="Mniej porcji">−</button><span>${m} ${m===1?'porcja':(m<5?'porcje':'porcji')}</span><button type="button" data-act="plus" aria-label="Więcej porcji">+</button>${d.batch&&m!==d.batch?`<button type="button" data-act="batch" class="q-batch">${d.batch}×</button>`:''}</span>` : ''}`;
+}
+
+function paintCards(){
+  document.querySelectorAll('.card').forEach(b=>{
+    const i = +b.dataset.i;
+    b.innerHTML = cardHTML(DISHES[i], i);
+    b.classList.toggle('on', sel.has(i));
+    b.setAttribute('aria-pressed', sel.has(i) ? 'true':'false');
+  });
+}
+
+menu.addEventListener('click', e=>{
+  const card = e.target.closest('.card');
+  if(!card) return;
+  const i = +card.dataset.i;
+  const act = e.target.dataset.act;
+  if(act === 'plus'){ sel.set(i, sel.get(i)+1); }
+  else if(act === 'batch'){ sel.set(i, DISHES[i].batch); }
+  else if(act === 'minus'){
+    const v = sel.get(i)-1;
+    if(v<1) sel.delete(i); else sel.set(i,v);
+  }
+  else { sel.has(i) ? sel.delete(i) : sel.set(i,1); }
+  render();
+});
+
+document.getElementById('clear').addEventListener('click', ()=>{ sel.clear(); render(); });
+
+// --- taby ---
+const tShop = document.getElementById('tab-shop'), tRec = document.getElementById('tab-rec');
+tShop.addEventListener('click', ()=>{tab='shop';render();});
+tRec.addEventListener('click', ()=>{tab='rec';render();});
+
+// --- lista zakupów ---
+const checked = new Set();
+function shoppingHTML(){
+  const agg = new Map();
+  const noQty = new Map();
+  [...sel.entries()].forEach(([i,mult])=>{
+    DISHES[i].ing.forEach(([name,qty,unit,cat])=>{
+      if(qty === null){ noQty.set(name, cat); return; }
+      const key = name+'|'+unit;
+      if(!agg.has(key)) agg.set(key, {name, unit, cat, qty:0});
+      agg.get(key).qty += qty*mult;
+    });
+  });
+  noQty.forEach((cat,name)=>{
+    const key = name+'|';
+    if(!agg.has(key)) agg.set(key, {name, unit:'', cat, qty:null});
+  });
+
+  const byCat = {};
+  [...agg.values()].forEach(v=>{ (byCat[v.cat] ||= []).push(v); });
+
+  let html = '';
+  ORDER.forEach(c=>{
+    if(!byCat[c]) return;
+    byCat[c].sort((a,b)=>a.name.localeCompare(b.name,'pl'));
+    html += `<div class="shop-group"><h3>${K[c]}</h3>`;
+    byCat[c].forEach(v=>{
+      const id = 'i-'+encodeURIComponent(v.name+v.unit).replace(/[^a-zA-Z0-9-]/g,'');
+      const amt = amount(v.qty, v.unit);
+      const done = checked.has(id) ? ' done' : '';
+      html += `<div class="item${done}"><input type="checkbox" id="${id}" ${checked.has(id)?'checked':''}>
+        <label for="${id}"><span>${v.name}</span><span class="amt">${amt}</span></label></div>`;
+    });
+    html += `</div>`;
+  });
+  return html;
+}
+
+// --- przepisy ---
+function recipesHTML(){
+  return [...sel.entries()].map(([i,mult])=>{
+    const d = DISHES[i];
+    // dania garnkowe gotujesz raz — przepis się skaluje.
+    // dania jednoporcjowe przygotowujesz osobno — przepis zostaje na jedną porcję.
+    const rmult = d.batch ? mult : 1;
+    const ing = d.ing.map(([name,qty,unit])=>{
+      return `<li><span style="color:var(--ink);font-weight:400">${name}</span><span>${amount(qty===null?null:qty*rmult, unit)}</span></li>`;
+    }).join('');
+    const meta = d.batch
+      ? `${mult} ${mult===1?'porcja':(mult<5?'porcje':'porcji')} z jednego garnka`
+      : (mult>1 ? `1 porcja · przygotowujesz ${mult} ${mult<5?'razy':'razy'}, każdorazowo świeżo` : '1 porcja');
+    return `<article class="recipe">
+      <h3>${d.n}${!d.batch && mult>1 ? ` <span class="rep">×${mult}</span>` : ''}</h3>
+      <p class="rmeta">${meta} · ${d.kcal} kcal i ${d.prot} g białka na porcję · ${d.time}</p>
+      <h4>Składniki${!d.batch && mult>1 ? ' na jedną porcję' : ''}</h4><ul class="ing">${ing}</ul>
+      <h4>Przygotowanie</h4><ol>${d.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+      ${!d.batch && mult>1 ? `<p class="tip">Lista zakupów uwzględnia ${mult} porcje — składniki powyżej są na jedno przygotowanie.</p>` : ''}
+      ${d.batch && mult===1 ? `<p class="tip">Danie dobrze znosi gotowanie na zapas — przy ${d.batch} porcjach nakład pracy jest ten sam, a starczy na ${d.batch} dni.</p>` : ''}
+      ${d.tip?`<p class="tip">${d.tip}</p>`:''}
+    </article>`;
+  }).join('');
+}
+
+// --- rozpiska dzienna ---
+const SLOT = g => g==='Śniadania' ? 'sn'
+  : (g==='Obiady' || g==='Dania azjatyckie') ? 'ob' : 'ko';
+const SLOT_NAME = {sn:'Śniadanie', ob:'Obiad', ko:'Kolacja'};
+
+function buildDays(){
+  const q = {sn:[], ob:[], ko:[]};
+  [...sel.entries()].forEach(([i,mult])=>{
+    const d = DISHES[i];
+    for(let k=0; k<d.por*mult; k++) q[SLOT(d.g)].push(d);
+  });
+  const n = Math.max(q.sn.length, q.ob.length, q.ko.length);
+  const out = [];
+  for(let i=0; i<n; i++){
+    const row = {sn:q.sn[i]||null, ob:q.ob[i]||null, ko:q.ko[i]||null};
+    row.kcal = 0; row.prot = 0;
+    ['sn','ob','ko'].forEach(k=>{ if(row[k]){ row.kcal += row[k].kcal; row.prot += row[k].prot; } });
+    out.push(row);
+  }
+  out.counts = {sn:q.sn.length, ob:q.ob.length, ko:q.ko.length};
+  return out;
+}
+
+function daysHTML(days){
+  if(!days.length) return '';
+  const c = days.counts, n = days.length;
+  const chip = (k,label) => `<span class="chip${c[k]<n?' short':''}"><b>${c[k]}</b> ${label}</span>`;
+  const missing = [];
+  if(c.sn<n) missing.push(`${n-c.sn} śniadań`);
+  if(c.ob<n) missing.push(`${n-c.ob} obiadów`);
+  if(c.ko<n) missing.push(`${n-c.ko} kolacji`);
+
+  let html = `<div class="days-head"><h2>Rozpiska dnia po dniu</h2><div class="rule"></div>
+    <div class="days-note">${n} ${n===1?'dzień':'dni'}</div></div>
+    <div class="balance">
+      ${chip('sn','śniadań')}${chip('ob','obiadów')}${chip('ko','kolacji')}
+      <span class="chip"><b>${n}</b> ${n===1?'dzień':'dni'} razem</span>
+    </div>`;
+  if(missing.length){
+    html += `<p class="balance-hint">Liczbę dni wyznacza najdłuższa kolejka porcji. Żeby dni były pełne, brakuje: ${missing.join(', ')}.</p>`;
+  }
+  days.forEach((r,idx)=>{
+    const slots = ['sn','ob','ko'].map(k=>{
+      const d = r[k];
+      return `<div class="slot${d?'':' zero'}">
+        <span class="lab">${SLOT_NAME[k]}</span>
+        <span class="nm">${d ? d.n : '0'}</span>
+        <span class="val">${d ? d.kcal+' kcal · '+d.prot+' g' : '0 kcal · 0 g'}</span>
+      </div>`;
+    }).join('');
+    const low = r.kcal>0 && r.kcal < 1500;
+    html += `<div class="day">
+      <div class="day-head"><b>Dzień ${idx+1}</b><span class="tot">${r.kcal.toLocaleString('pl-PL')} kcal · ${r.prot} g białka</span></div>
+      ${slots}
+      ${low ? `<div class="day-warn">Niepełny dzień — brakuje ok. ${(2100-r.kcal).toLocaleString('pl-PL')} kcal do celu.</div>` : ''}
+    </div>`;
+  });
+  return html;
+}
+
+// --- render ---
+function render(){
+  paintCards();
+
+  let kcal=0, prot=0, n=0;
+  sel.forEach((mult,i)=>{ const d=DISHES[i]; kcal += d.kcal*d.por*mult; prot += d.prot*d.por*mult; n += mult; });
+
+  const days = buildDays();
+  document.getElementById('days').innerHTML = daysHTML(days);
+
+  const nd = days.length;
+  document.getElementById('t-days').textContent = nd;
+  document.getElementById('t-dish').textContent = n;
+  document.getElementById('t-kcal').textContent = kcal.toLocaleString('pl-PL');
+  document.getElementById('t-prot').textContent = prot;
+
+  const avgK = nd ? Math.round(kcal/nd) : 0;
+  const avgP = nd ? Math.round(prot/nd) : 0;
+  document.getElementById('l-kcal').textContent = nd ? `śr. ${avgK.toLocaleString('pl-PL')} / dzień` : 'cel 2100 / dzień';
+  document.getElementById('l-prot').textContent = nd ? `śr. ${avgP} g / dzień` : 'cel 130 g / dzień';
+  document.getElementById('f-kcal').style.width = Math.min(100, avgK/2100*100)+'%';
+  document.getElementById('f-prot').style.width = Math.min(100, avgP/130*100)+'%';
+
+  tShop.setAttribute('aria-selected', tab==='shop');
+  tRec.setAttribute('aria-selected', tab==='rec');
+
+  const out = document.getElementById('result');
+  if(sel.size === 0){
+    out.innerHTML = `<p class="empty">Nic jeszcze nie wybrano. Zaznacz dania powyżej — lista zakupów i przepisy złożą się tutaj.</p>`;
+    return;
+  }
+  out.innerHTML = tab==='shop' ? shoppingHTML() : recipesHTML();
+}
+
+document.getElementById('result').addEventListener('change', e=>{
+  if(e.target.type !== 'checkbox') return;
+  const id = e.target.id;
+  checked.has(id) ? checked.delete(id) : checked.add(id);
+  e.target.closest('.item').classList.toggle('done', checked.has(id));
+});
+
+render();
+</script>
+</body>
+</html>
