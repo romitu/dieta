@@ -2,7 +2,9 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EDF1F3">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Planer posiłków — 14 dni</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,7 +34,7 @@ body{
 .wrap{max-width:900px;margin:0 auto;padding:0 16px}
 
 /* ---- header ---- */
-header{padding:28px 0 18px}
+header{padding:28px 0 14px}
 .eyebrow{
   font-size:11px;letter-spacing:.16em;text-transform:uppercase;
   color:var(--muted);font-weight:600;margin-bottom:6px;
@@ -49,17 +51,58 @@ h1{
 }
 @media (max-width:520px){
   .kcal-tag{display:block;margin:8px 0 0;top:0;font-size:12px;width:max-content}
+  header{padding:18px 0 10px}
 }
 .sub{color:var(--muted);font-size:14px;margin-top:6px;max-width:52ch}
 
+/* ---- pasek synchronizacji ---- */
+.syncbar{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:600;color:var(--muted);
+  padding:7px 11px;background:var(--surface);
+  border:1px solid var(--line);border-radius:3px;margin-top:12px;
+}
+.syncbar .dot{width:8px;height:8px;border-radius:50%;background:var(--line-strong);flex:none}
+.syncbar.ok .dot{background:var(--herb)}
+.syncbar.busy .dot{background:#C08A2E}
+.syncbar.off .dot{background:var(--beet)}
+.syncbar .grow{flex:1}
+.syncbar button{
+  font:inherit;font-size:11.5px;font-weight:600;background:none;
+  border:1px solid var(--line);color:var(--muted);
+  padding:4px 9px;border-radius:2px;cursor:pointer;
+}
+.syncbar button:hover{border-color:var(--beet);color:var(--beet)}
+
+/* ---- nawigacja widoków ---- */
+.nav{
+  position:sticky;top:0;z-index:30;display:flex;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:3px;margin:12px 0 20px;overflow:hidden;
+  box-shadow:0 1px 0 var(--line-strong);
+}
+.nav button{
+  flex:1;font:inherit;font-size:13px;font-weight:600;letter-spacing:.02em;
+  padding:13px 6px;background:none;border:none;border-right:1px solid var(--line);
+  color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.nav button:last-child{border-right:none}
+.nav button[aria-current="true"]{background:var(--ink);color:#fff}
+.nav .pill{
+  font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;
+  background:var(--beet);color:#fff;border-radius:9px;padding:1px 6px;line-height:1.5;
+}
+.nav button[aria-current="true"] .pill{background:#fff;color:var(--ink)}
+@media (max-width:400px){ .nav button{font-size:12px;padding:12px 4px} }
+
 /* ---- licznik ---- */
 .tally{
-  position:sticky;top:0;z-index:20;
+  position:sticky;top:47px;z-index:20;
   background:var(--surface);
   border:1px solid var(--line);
   border-radius:3px;
   padding:12px 14px;
-  margin:16px 0 24px;
+  margin:0 0 24px;
   box-shadow:0 1px 0 var(--line-strong);
 }
 .tally-top{display:flex;flex-wrap:wrap;gap:16px;align-items:baseline}
@@ -89,9 +132,7 @@ h1{
 .days-head h2{font-family:Bitter,serif;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
 .days-head .rule{flex:1;height:1px;background:var(--line-strong)}
 .days-note{font-size:11.5px;color:var(--muted);font-weight:600}
-.balance{
-  display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;
-}
+.balance{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .chip{
   font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:2px;
   border:1px solid var(--line);background:var(--surface);color:var(--muted);
@@ -100,9 +141,7 @@ h1{
 .chip b{color:var(--ink);font-weight:700}
 .chip.short{border-color:var(--beet);color:var(--beet)}
 .chip.short b{color:var(--beet)}
-.balance-hint{
-  font-size:12.5px;color:var(--beet);font-weight:600;margin-bottom:10px;line-height:1.45;
-}
+.balance-hint{font-size:12.5px;color:var(--beet);font-weight:600;margin-bottom:10px;line-height:1.45}
 .day{
   background:var(--surface);border:1px solid var(--line);
   border-left:3px solid var(--herb);border-radius:2px;
@@ -115,10 +154,7 @@ h1{
 .day-head b{font-family:Bitter,serif;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
 .day-head .tot{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--beet);white-space:nowrap}
 .slot{display:flex;gap:10px;font-size:14px;padding:2px 0;align-items:baseline}
-.slot .lab{
-  flex:none;width:74px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted);font-weight:700;
-}
+.slot .lab{flex:none;width:74px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .slot .nm{flex:1;line-height:1.35}
 .slot .val{flex:none;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600;font-size:12.5px;white-space:nowrap}
 .slot.zero .nm,.slot.zero .val{color:var(--line-strong)}
@@ -127,13 +163,8 @@ h1{
 
 /* ---- sekcje dań ---- */
 .group{margin-bottom:26px}
-.group-head{
-  display:flex;align-items:center;gap:10px;margin-bottom:12px;
-}
-.group-head h2{
-  font-family:Bitter,serif;font-size:13px;font-weight:600;
-  letter-spacing:.14em;text-transform:uppercase;
-}
+.group-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.group-head h2{font-family:Bitter,serif;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
 .group-head .rule{flex:1;height:1px;background:var(--line-strong)}
 .group-head .count{font-size:11px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
 
@@ -165,58 +196,73 @@ h1{
 }
 .qty{display:flex;align-items:center;gap:8px;margin-top:3px}
 .qty button{
-  width:24px;height:24px;border:1px solid var(--beet);background:var(--surface);
+  width:30px;height:30px;border:1px solid var(--beet);background:var(--surface);
   color:var(--beet);font:inherit;font-weight:700;line-height:1;border-radius:2px;cursor:pointer;
 }
 .qty button:hover{background:var(--beet);color:#fff}
 .qty span{font-size:12px;font-weight:600;color:var(--beet);font-variant-numeric:tabular-nums}
 .q-batch{
-  width:auto!important;padding:0 7px;font-size:11px!important;
+  width:auto!important;padding:0 9px;font-size:11px!important;
   border-color:var(--herb)!important;color:var(--herb)!important;margin-left:2px;
 }
 .q-batch:hover{background:var(--herb)!important;color:#fff!important}
 
-/* ---- panel wyników ---- */
-.panel{margin-top:34px;border-top:2px solid var(--ink);padding-top:0}
-.tabs{display:flex;gap:0;margin-bottom:0}
-.tab{
-  font:inherit;font-size:13px;font-weight:600;letter-spacing:.04em;
-  padding:11px 18px;border:1px solid var(--line);border-top:none;
-  background:var(--porcelain);color:var(--muted);cursor:pointer;
-  border-radius:0 0 2px 2px;
+/* ---- widok: lista zakupów (tryb sklepowy) ---- */
+.shop-top{
+  position:sticky;top:47px;z-index:20;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:3px;padding:11px 13px;margin-bottom:16px;
+  box-shadow:0 1px 0 var(--line-strong);
 }
-.tab+.tab{border-left:none}
-.tab[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.tab:focus-visible{outline:2px solid var(--beet);outline-offset:2px}
-
-.result{
-  background:var(--surface);border:1px solid var(--line);border-top:none;
-  padding:20px 18px;border-radius:0 0 3px 3px;margin-top:-1px;
+.shop-count{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.shop-count b{font-family:Bitter,serif;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.shop-count span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.shop-count .sp{margin-left:auto;display:flex;gap:6px}
+.shop-count button{
+  font:inherit;font-size:11.5px;font-weight:600;background:none;
+  border:1px solid var(--line);color:var(--muted);padding:6px 10px;border-radius:2px;cursor:pointer;
 }
-.empty{color:var(--muted);font-size:14.5px;padding:20px 0;text-align:center}
+.shop-count button:hover{border-color:var(--beet);color:var(--beet)}
+.shop-bar{height:6px;background:var(--porcelain);margin-top:9px;overflow:hidden}
+.shop-bar i{display:block;height:100%;background:var(--herb);width:0;transition:width .25s ease}
 
-/* lista zakupów */
-.shop-group{margin-bottom:20px}
-.shop-group h3{
+.sgroup{margin-bottom:18px}
+.sgroup h3{
   font-family:Bitter,serif;font-size:11px;font-weight:600;letter-spacing:.14em;
   text-transform:uppercase;color:var(--beet);
-  padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:8px;
+  padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:2px;
+  display:flex;justify-content:space-between;align-items:baseline;gap:8px;
 }
-.item{
-  display:flex;align-items:flex-start;gap:9px;padding:5px 0;
-  border-bottom:1px dotted var(--line);font-size:14.5px;
+.sgroup h3 em{font-style:normal;color:var(--muted);font-family:Inter,sans-serif;font-size:10.5px;font-variant-numeric:tabular-nums}
+.sitem{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 4px;border-bottom:1px solid var(--line);
+  font-size:16px;cursor:pointer;background:var(--surface);
+  -webkit-tap-highlight-color:transparent;
 }
-.item:last-child{border-bottom:none}
-.item input{
-  width:17px;height:17px;margin-top:3px;flex:none;accent-color:var(--beet);cursor:pointer;
+.sitem input{position:absolute;opacity:0;width:0;height:0}
+.sitem .box{
+  flex:none;width:26px;height:26px;border:2px solid var(--line-strong);
+  border-radius:3px;display:flex;align-items:center;justify-content:center;
+  transition:background .12s,border-color .12s;
 }
-.item label{cursor:pointer;display:flex;flex:1;gap:10px;justify-content:space-between}
-.item .amt{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:13.5px}
-.item.done label{text-decoration:line-through;color:var(--muted)}
+.sitem .box::after{
+  content:"";width:12px;height:7px;border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;
+  transform:rotate(-45deg) translate(1px,-2px) scale(0);transition:transform .12s;
+}
+.sitem .nm{flex:1;line-height:1.3}
+.sitem .amt{flex:none;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:14px}
+.sitem.done .box{background:var(--herb);border-color:var(--herb)}
+.sitem.done .box::after{transform:rotate(-45deg) translate(1px,-2px) scale(1)}
+.sitem.done .nm,.sitem.done .amt{color:var(--line-strong);text-decoration:line-through}
+.sitem:last-child{border-bottom:none}
+.shop-done-head{
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  font-weight:700;margin:22px 0 4px;padding-top:14px;border-top:2px solid var(--line);
+}
 
-/* przepisy */
-.recipe{padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--line)}
-.recipe:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+/* ---- przepisy ---- */
+.recipe{padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--line);background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:16px 15px;margin-bottom:10px}
 .recipe h3{font-family:Bitter,serif;font-size:19px;font-weight:700;line-height:1.25}
 .recipe h3 .rep{
   font-family:Inter,sans-serif;font-size:12px;font-weight:700;vertical-align:middle;
@@ -237,19 +283,61 @@ h1{
   padding:9px 12px;margin-top:12px;font-size:13.5px;color:#2F4A35;
 }
 
-footer{margin-top:34px;font-size:12.5px;color:var(--muted);line-height:1.6}
+.empty{
+  color:var(--muted);font-size:14.5px;padding:36px 16px;text-align:center;
+  background:var(--surface);border:1px solid var(--line);border-radius:3px;
+}
+.empty button{
+  display:block;margin:12px auto 0;font:inherit;font-size:13px;font-weight:600;
+  background:var(--ink);color:#fff;border:none;padding:9px 16px;border-radius:2px;cursor:pointer;
+}
+
+/* ---- ustawienia synchronizacji ---- */
+.setup{
+  margin-top:30px;background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  font-size:13.5px;
+}
+.setup summary{
+  padding:12px 14px;cursor:pointer;font-weight:600;font-size:13px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+}
+.setup summary::marker{color:var(--line-strong)}
+.setup .body{padding:0 14px 16px;line-height:1.6}
+.setup label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--muted);margin:12px 0 4px}
+.setup input{
+  width:100%;font:inherit;font-size:14px;padding:9px 10px;
+  border:1px solid var(--line);border-radius:2px;background:var(--porcelain);color:var(--ink);
+}
+.setup .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.setup .row button{
+  font:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:2px;cursor:pointer;
+  border:1px solid var(--ink);background:var(--ink);color:#fff;
+}
+.setup .row button.ghost{background:none;color:var(--muted);border-color:var(--line)}
+.setup .row button.ghost:hover{border-color:var(--beet);color:var(--beet)}
+.setup ol{padding-left:20px;margin:8px 0}
+.setup ol li{padding:3px 0}
+.setup code{
+  background:var(--porcelain);padding:1px 5px;border-radius:2px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;word-break:break-all;
+}
+.setup pre{
+  background:var(--porcelain);padding:10px 12px;border-radius:2px;overflow-x:auto;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;margin:6px 0;
+}
+.setup .note{color:var(--muted);font-size:12.5px;margin-top:10px}
+
+footer{margin-top:30px;font-size:12.5px;color:var(--muted);line-height:1.6}
 footer strong{color:var(--ink)}
 
 @media print{
   body{background:#fff;padding:0}
-  .tally,.grid,.tabs,.group-head .count,.tally-clear,footer{display:none}
-  .panel{border:none}
-  .result{border:none;padding:0}
+  .tally,.grid,.nav,.syncbar,.setup,.group-head .count,.tally-clear,.shop-top,footer{display:none}
+  .sitem{border-bottom:1px solid #ccc}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media (max-width:520px){
   .grid{grid-template-columns:1fr}
-  .tab{flex:1;padding:11px 8px;font-size:12.5px}
 }
 </style>
 </head>
@@ -260,54 +348,122 @@ footer strong{color:var(--ink)}
   <div class="eyebrow">Plan 14-dniowy · zakupy i przepisy</div>
   <h1>Planer posiłków <span class="kcal-tag">2100 kcal / dzień</span></h1>
   <p class="sub">Zaznacz dania i ustaw, ile porcji chcesz przygotować. Każda porcja to jeden posiłek — lista zakupów i przepisy przeliczą się same.</p>
+  <div class="syncbar" id="syncbar">
+    <span class="dot"></span>
+    <span id="s-txt">Sprawdzam synchronizację…</span>
+    <span class="grow"></span>
+    <button type="button" id="s-open">Ustawienia</button>
+  </div>
 </header>
 
-<div class="tally">
-  <div class="tally-top">
-    <div class="stat"><b id="t-days">0</b><span>dni</span></div>
-    <div class="stat"><b id="t-dish">0</b><span>dań</span></div>
-    <div class="stat"><b id="t-kcal">0</b><span>kcal razem</span></div>
-    <div class="stat"><b id="t-prot">0</b><span>g białka razem</span></div>
-    <button class="tally-clear" id="clear">Wyczyść</button>
-  </div>
-  <div class="gauges">
-    <div class="gauge g-kcal">
-      <div class="gauge-label"><span>Kalorie</span><span id="l-kcal">cel 2100 / dzień</span></div>
-      <div class="gauge-track"><div class="gauge-fill" id="f-kcal"></div></div>
+<nav class="nav" id="nav">
+  <button type="button" data-v="plan" aria-current="true">Plan i dania</button>
+  <button type="button" data-v="shop">Zakupy <span class="pill" id="pill-shop" hidden>0</span></button>
+  <button type="button" data-v="rec">Przepisy</button>
+</nav>
+
+<section id="v-plan">
+  <div class="tally">
+    <div class="tally-top">
+      <div class="stat"><b id="t-days">0</b><span>dni</span></div>
+      <div class="stat"><b id="t-dish">0</b><span>dań</span></div>
+      <div class="stat"><b id="t-kcal">0</b><span>kcal razem</span></div>
+      <div class="stat"><b id="t-prot">0</b><span>g białka razem</span></div>
+      <button class="tally-clear" id="clear">Wyczyść</button>
     </div>
-    <div class="gauge g-prot">
-      <div class="gauge-label"><span>Białko</span><span id="l-prot">cel 130 g / dzień</span></div>
-      <div class="gauge-track"><div class="gauge-fill" id="f-prot"></div></div>
+    <div class="gauges">
+      <div class="gauge g-kcal">
+        <div class="gauge-label"><span>Kalorie</span><span id="l-kcal">cel 2100 / dzień</span></div>
+        <div class="gauge-track"><div class="gauge-fill" id="f-kcal"></div></div>
+      </div>
+      <div class="gauge g-prot">
+        <div class="gauge-label"><span>Białko</span><span id="l-prot">cel 130 g / dzień</span></div>
+        <div class="gauge-track"><div class="gauge-fill" id="f-prot"></div></div>
+      </div>
     </div>
   </div>
-</div>
-
-<section class="days" id="days"></section>
-
-<main id="menu"></main>
-
-<section class="panel">
-  <div class="tabs" role="tablist">
-    <button class="tab" id="tab-shop" role="tab" aria-selected="true">Lista zakupów</button>
-    <button class="tab" id="tab-rec" role="tab" aria-selected="false">Przepisy</button>
-  </div>
-  <div class="result" id="result"></div>
+  <section class="days" id="days"></section>
+  <main id="menu"></main>
 </section>
+
+<section id="v-shop" hidden>
+  <div id="shop-top"></div>
+  <div id="shop-out"></div>
+</section>
+
+<section id="v-rec" hidden>
+  <div id="rec-out"></div>
+</section>
+
+<details class="setup" id="setup">
+  <summary>Synchronizacja komputer ↔ telefon</summary>
+  <div class="body">
+    <p>Wybór dań i odhaczone zakupy zapisują się w Twojej bazie Firebase, więc telefon widzi to, co zaznaczyłeś na komputerze. Bez wpisanego adresu strona i tak działa — pamięta wszystko lokalnie na danym urządzeniu.</p>
+
+    <label for="cfg-db">Adres bazy (databaseURL)</label>
+    <input id="cfg-db" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://planer-xxxx-default-rtdb.europe-west1.firebasedatabase.app">
+
+    <label for="cfg-key">Prywatny klucz listy</label>
+    <input id="cfg-key" type="text" autocomplete="off" spellcheck="false" placeholder="np. romitu-9f3ac21b">
+
+    <div class="row">
+      <button type="button" id="cfg-save">Zapisz i połącz</button>
+      <button type="button" class="ghost" id="cfg-link">Skopiuj link dla telefonu</button>
+      <button type="button" class="ghost" id="cfg-clear">Wyłącz synchronizację</button>
+    </div>
+    <p class="note" id="cfg-msg"></p>
+
+    <h4 style="margin-top:18px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--beet)">Jak to uruchomić — raz, 5 minut</h4>
+    <ol>
+      <li>Wejdź na <code>console.firebase.google.com</code> i załóż projekt (nazwa dowolna, Google Analytics możesz pominąć).</li>
+      <li>W menu po lewej: <strong>Build → Realtime Database → Create Database</strong>. Lokalizacja <em>europe-west1</em>, tryb <strong>test mode</strong>.</li>
+      <li>Skopiuj adres bazy z góry ekranu (kończy się na <code>.firebasedatabase.app</code>) i wklej go w pole powyżej.</li>
+      <li>W pole „prywatny klucz" wpisz coś długiego i tylko swojego, np. <code>romitu-9f3ac21b</code>. To on decyduje, gdzie leży Twoja lista.</li>
+      <li>Kliknij <strong>Zapisz i połącz</strong>, potem <strong>Skopiuj link dla telefonu</strong> i wyślij go sobie — telefon po otwarciu zapamięta ustawienia sam.</li>
+      <li>W zakładce <strong>Rules</strong> wklej poniższe reguły (tryb testowy wygasa po 30 dniach, te nie wygasają):</li>
+    </ol>
+<pre>{
+  "rules": {
+    "planer": {
+      "$klucz": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}</pre>
+    <p class="note">Dane widzi każdy, kto zna adres bazy i klucz — dlatego klucz ma być długi i nieoczywisty. To lista zakupów, nie hasła, ale nie wklejaj tu nic wrażliwego.</p>
+    <p class="note">Chcesz mieć to wpisane na stałe dla wszystkich urządzeń? W pliku <code>index.html</code> na samym początku skryptu uzupełnij <code>SYNC_DOMYSLNY</code> — wtedy nic nie trzeba klikać.</p>
+  </div>
+</details>
 
 <footer>
   <p><strong>Uwaga:</strong> dokument informacyjny, nie stanowi porady medycznej. Wartości są szacunkowe (±10%).</p>
   <p style="margin-top:6px">Wszystkie dania liczone są na <strong>jedną porcję</strong> — przyciskami −/+ ustawiasz, na ile posiłków gotujesz. Zielony przycisk przy daniach garnkowych ustawia od razu sensowną wielkość partii. Czasy przygotowania dotyczą całego garnka i przy większej liczbie porcji zmieniają się nieznacznie.</p>
   <p style="margin-top:6px">Cel <strong>2100 kcal</strong> osiągasz <strong>trzema posiłkami</strong> — śniadanie ok. 650, obiad ok. 800, kolacja ok. 650 kcal. Nic nie musisz dobierać poza planem. Deficyt wynosi ok. 650 kcal przy zapotrzebowaniu ~2750, czyli spadek ok. 0,6 kg tygodniowo.</p>
+  <p style="margin-top:6px">Lista zakupów jest ułożona w kolejności obchodzenia sklepu: warzywa, pieczywo, nabiał, mięso, produkty suche, na końcu mrożonki.</p>
 </footer>
 
 </div>
 
 <script>
+/* ========================================================================
+   USTAWIENIA SYNCHRONIZACJI — wpisz tu raz, a zadziała na wszystkich
+   urządzeniach bez klikania. Możesz też zostawić puste i ustawić
+   wszystko w panelu „Synchronizacja" na dole strony.
+   ======================================================================== */
+const SYNC_DOMYSLNY = {
+  db:  '',          // np. 'https://planer-xxxx-default-rtdb.europe-west1.firebasedatabase.app'
+  key: 'planer'     // prywatny, długi identyfikator listy
+};
+/* ======================================================================== */
+
 const K = {
   m:'Mięso i ryby', w:'Warzywa i grzyby', n:'Nabiał i jaja', p:'Pieczywo',
   s:'Sypkie i zboża', k:'Puszki i słoiki', z:'Mrożonki', t:'Tłuszcze', x:'Przyprawy i zioła'
 };
-const ORDER = ['m','w','n','p','s','k','z','t','x'];
+// kolejność obchodzenia sklepu — mrożonki na końcu, żeby nie zdążyły odtajać
+const ORDER = ['w','p','n','m','s','k','t','x','z'];
 
 // [nazwa, ilość, jednostka, kategoria]  — ilość null = "do smaku"
 const DISHES = [
@@ -457,15 +613,21 @@ const DISHES = [
  tip:"Feta jest słona — nie dosalaj sałatki. Jeśli chcesz zbić sól, przepłucz ser zimną wodą przed pokruszeniem."}
 ];
 
-const sel = new Map(); // index -> mnożnik
-let tab = 'shop';
+/* ================= stan ================= */
+const IDX = new Map(DISHES.map((d,i)=>[d.n,i]));
+const sel = new Map();      // index dania -> mnożnik
+const checked = new Set();  // "nazwa|jednostka" odhaczone w sklepie
+let stamp = 0;              // znacznik ostatniej zmiany (ms)
+let view = 'plan';
+let userPickedView = false;
 
-const fmt = n => {
-  const r = Math.round(n*100)/100;
-  return String(r).replace('.', ',');
-};
+const LS_STATE = 'planer-stan-v1';
+const LS_CFG   = 'planer-sync-v1';
 
-// ilość + jednostka, z sensownym zaokrągleniem
+const fmt = n => String(Math.round(n*100)/100).replace('.', ',');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const porcje = m => m===1?'porcja':(m<5?'porcje':'porcji');
+
 function amount(qty, unit){
   if(qty === null) return 'do smaku';
   if(unit === 'g'){
@@ -479,21 +641,117 @@ function amount(qty, unit){
   return fmt(qty)+(unit?' '+unit:'');
 }
 
-// --- render menu ---
+function snapshot(){
+  const s = {};
+  sel.forEach((m,i)=>{ s[DISHES[i].n] = m; });
+  return { v:1, ts:stamp, sel:s, checked:[...checked] };
+}
+function applySnapshot(d){
+  if(!d || typeof d !== 'object') return false;
+  sel.clear(); checked.clear();
+  Object.entries(d.sel||{}).forEach(([n,m])=>{ if(IDX.has(n) && m>0) sel.set(IDX.get(n), m); });
+  (d.checked||[]).forEach(k=>checked.add(k));
+  stamp = d.ts || 0;
+  return true;
+}
+
+/* ================= synchronizacja ================= */
+let cfg = { db:'', key:'' };
+let pushTimer = null, pending = false;
+
+function loadCfg(){
+  let c = null;
+  try{ c = JSON.parse(localStorage.getItem(LS_CFG) || 'null'); }catch(e){}
+  cfg = {
+    db:  (c && c.db)  ? c.db  : (SYNC_DOMYSLNY.db  || ''),
+    key: (c && c.key) ? c.key : (SYNC_DOMYSLNY.key || 'planer')
+  };
+  cfg.db = cfg.db.trim().replace(/\/+$/,'');
+  cfg.key = (cfg.key || 'planer').trim().replace(/[.#$\[\]\/]/g,'-');
+}
+function cloudURL(){
+  return cfg.db ? cfg.db + '/planer/' + encodeURIComponent(cfg.key) + '.json' : null;
+}
+const bar = document.getElementById('syncbar');
+const sTxt = document.getElementById('s-txt');
+function status(txt, cls){
+  sTxt.textContent = txt;
+  bar.className = 'syncbar' + (cls ? ' '+cls : '');
+}
+const godzina = () => new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+
+function saveLocal(){
+  try{ localStorage.setItem(LS_STATE, JSON.stringify(snapshot())); }catch(e){}
+}
+function loadLocal(){
+  try{
+    const d = JSON.parse(localStorage.getItem(LS_STATE) || 'null');
+    if(d) return applySnapshot(d);
+  }catch(e){}
+  return false;
+}
+
+function queuePush(){
+  if(!cloudURL()){ status('Zapisano na tym urządzeniu · sync wyłączony', 'off'); return; }
+  pending = true;
+  status('Zapisywanie…', 'busy');
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(push, 700);
+}
+async function push(){
+  const url = cloudURL();
+  if(!url) return;
+  const data = snapshot();
+  try{
+    const r = await fetch(url, {method:'PUT', body: JSON.stringify(data), headers:{'Content-Type':'application/json'}});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    pending = false;
+    status('Zsynchronizowano · ' + godzina(), 'ok');
+  }catch(e){
+    status('Brak połączenia — zapisano lokalnie', 'off');
+  }
+}
+async function pull(cichy){
+  const url = cloudURL();
+  if(!url){ status('Sync wyłączony — dane tylko na tym urządzeniu', 'off'); return; }
+  if(pending) return;                     // najpierw wyślij swoje zmiany
+  if(!cichy) status('Sprawdzam…', 'busy');
+  try{
+    const r = await fetch(url + '?_=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d = await r.json();
+    if(d && typeof d === 'object' && (d.ts||0) > stamp){
+      applySnapshot(d);
+      saveLocal();
+      render();
+      status('Pobrano nowszą wersję · ' + godzina(), 'ok');
+      return;
+    }
+    if(!d && stamp > 0){ queuePush(); return; }   // w chmurze pusto — wyślij swoje
+    status('Zsynchronizowano · ' + godzina(), 'ok');
+  }catch(e){
+    status('Brak połączenia — pracujesz lokalnie', 'off');
+  }
+}
+function touch(){
+  stamp = Date.now();
+  saveLocal();
+  queuePush();
+  render();
+}
+
+/* ================= widok: karty dań ================= */
 const menu = document.getElementById('menu');
-const groups = [...new Set(DISHES.map(d=>d.g))];
-groups.forEach(g=>{
+[...new Set(DISHES.map(d=>d.g))].forEach(g=>{
   const items = DISHES.map((d,i)=>({d,i})).filter(o=>o.d.g===g);
   const sec = document.createElement('section');
   sec.className = 'group';
-  sec.innerHTML = `<div class="group-head"><h2>${g}</h2><div class="rule"></div><div class="count">${items.length}</div></div>`;
+  sec.innerHTML = `<div class="group-head"><h2>${esc(g)}</h2><div class="rule"></div><div class="count">${items.length}</div></div>`;
   const grid = document.createElement('div');
   grid.className = 'grid';
-  items.forEach(({d,i})=>{
+  items.forEach(({i})=>{
     const b = document.createElement('button');
-    b.className = 'card';
-    b.type = 'button';
-    b.dataset.i = i;
+    b.className = 'card'; b.type = 'button'; b.dataset.i = i;
     b.setAttribute('aria-pressed','false');
     grid.appendChild(b);
   });
@@ -505,11 +763,10 @@ function cardHTML(d, i){
   const m = sel.get(i);
   const batch = d.batch ? `<span>garnek na ${d.batch}</span>` : '';
   return `
-    <span class="card-name">${d.n}${d.wknd?' <span class="badge">weekend</span>':''}</span>
+    <span class="card-name">${esc(d.n)}${d.wknd?' <span class="badge">weekend</span>':''}</span>
     <span class="card-meta"><span>${d.kcal} kcal</span><span>${d.prot} g białka</span><span>${d.time}</span>${batch}</span>
-    ${m ? `<span class="qty"><button type="button" data-act="minus" aria-label="Mniej porcji">−</button><span>${m} ${m===1?'porcja':(m<5?'porcje':'porcji')}</span><button type="button" data-act="plus" aria-label="Więcej porcji">+</button>${d.batch&&m!==d.batch?`<button type="button" data-act="batch" class="q-batch">${d.batch}×</button>`:''}</span>` : ''}`;
+    ${m ? `<span class="qty"><button type="button" data-act="minus" aria-label="Mniej porcji">−</button><span>${m} ${porcje(m)}</span><button type="button" data-act="plus" aria-label="Więcej porcji">+</button>${d.batch&&m!==d.batch?`<button type="button" data-act="batch" class="q-batch">${d.batch}×</button>`:''}</span>` : ''}`;
 }
-
 function paintCards(){
   document.querySelectorAll('.card').forEach(b=>{
     const i = +b.dataset.i;
@@ -518,7 +775,6 @@ function paintCards(){
     b.setAttribute('aria-pressed', sel.has(i) ? 'true':'false');
   });
 }
-
 menu.addEventListener('click', e=>{
   const card = e.target.closest('.card');
   if(!card) return;
@@ -531,82 +787,126 @@ menu.addEventListener('click', e=>{
     if(v<1) sel.delete(i); else sel.set(i,v);
   }
   else { sel.has(i) ? sel.delete(i) : sel.set(i,1); }
-  render();
+  touch();
 });
+document.getElementById('clear').addEventListener('click', ()=>{ sel.clear(); checked.clear(); touch(); });
 
-document.getElementById('clear').addEventListener('click', ()=>{ sel.clear(); render(); });
-
-// --- taby ---
-const tShop = document.getElementById('tab-shop'), tRec = document.getElementById('tab-rec');
-tShop.addEventListener('click', ()=>{tab='shop';render();});
-tRec.addEventListener('click', ()=>{tab='rec';render();});
-
-// --- lista zakupów ---
-const checked = new Set();
-function shoppingHTML(){
+/* ================= lista zakupów ================= */
+function buildList(){
   const agg = new Map();
   const noQty = new Map();
   [...sel.entries()].forEach(([i,mult])=>{
     DISHES[i].ing.forEach(([name,qty,unit,cat])=>{
       if(qty === null){ noQty.set(name, cat); return; }
       const key = name+'|'+unit;
-      if(!agg.has(key)) agg.set(key, {name, unit, cat, qty:0});
+      if(!agg.has(key)) agg.set(key, {key, name, unit, cat, qty:0});
       agg.get(key).qty += qty*mult;
     });
   });
   noQty.forEach((cat,name)=>{
     const key = name+'|';
-    if(!agg.has(key)) agg.set(key, {name, unit:'', cat, qty:null});
+    if(!agg.has(key)) agg.set(key, {key, name, unit:'', cat, qty:null});
   });
-
   const byCat = {};
   [...agg.values()].forEach(v=>{ (byCat[v.cat] ||= []).push(v); });
+  ORDER.forEach(c=>{
+    if(byCat[c]) byCat[c].sort((a,b)=>a.name.localeCompare(b.name,'pl'));
+  });
+  return { byCat, all:[...agg.values()] };
+}
+
+function shopHTML(){
+  const top = document.getElementById('shop-top');
+  const out = document.getElementById('shop-out');
+  if(sel.size === 0){
+    top.innerHTML = '';
+    out.innerHTML = `<p class="empty">Lista jest pusta — najpierw zaznacz dania w zakładce „Plan i dania".
+      <button type="button" data-go="plan">Przejdź do dań</button></p>`;
+    return;
+  }
+  const {byCat, all} = buildList();
+  const done = all.filter(v=>checked.has(v.key)).length;
+  const pct = all.length ? Math.round(done/all.length*100) : 0;
+
+  top.innerHTML = `<div class="shop-top">
+    <div class="shop-count">
+      <b>${done}</b><span>z ${all.length} kupione</span>
+      <span class="sp">
+        <button type="button" id="shop-reset">Odznacz wszystko</button>
+      </span>
+    </div>
+    <div class="shop-bar"><i style="width:${pct}%"></i></div>
+  </div>`;
 
   let html = '';
   ORDER.forEach(c=>{
-    if(!byCat[c]) return;
-    byCat[c].sort((a,b)=>a.name.localeCompare(b.name,'pl'));
-    html += `<div class="shop-group"><h3>${K[c]}</h3>`;
-    byCat[c].forEach(v=>{
-      const id = 'i-'+encodeURIComponent(v.name+v.unit).replace(/[^a-zA-Z0-9-]/g,'');
-      const amt = amount(v.qty, v.unit);
-      const done = checked.has(id) ? ' done' : '';
-      html += `<div class="item${done}"><input type="checkbox" id="${id}" ${checked.has(id)?'checked':''}>
-        <label for="${id}"><span>${v.name}</span><span class="amt">${amt}</span></label></div>`;
+    const list = byCat[c];
+    if(!list) return;
+    const d = list.filter(v=>checked.has(v.key)).length;
+    const open = list.filter(v=>!checked.has(v.key));
+    const shut = list.filter(v=>checked.has(v.key));
+    html += `<div class="sgroup"><h3>${K[c]} <em>${d}/${list.length}</em></h3>`;
+    [...open, ...shut].forEach(v=>{
+      const on = checked.has(v.key);
+      html += `<label class="sitem${on?' done':''}">
+        <input type="checkbox" data-key="${esc(v.key)}" ${on?'checked':''}>
+        <span class="box"></span>
+        <span class="nm">${esc(v.name)}</span>
+        <span class="amt">${amount(v.qty, v.unit)}</span>
+      </label>`;
     });
     html += `</div>`;
   });
-  return html;
+  out.innerHTML = html;
 }
 
-// --- przepisy ---
+document.getElementById('v-shop').addEventListener('change', e=>{
+  if(e.target.type !== 'checkbox') return;
+  const key = e.target.dataset.key;
+  checked.has(key) ? checked.delete(key) : checked.add(key);
+  e.target.closest('.sitem').classList.toggle('done', checked.has(key));
+  stamp = Date.now(); saveLocal(); queuePush();
+  clearTimeout(window._reflow);
+  window._reflow = setTimeout(()=>{ if(view==='shop') { shopHTML(); paintPill(); } }, 900);
+});
+document.getElementById('v-shop').addEventListener('click', e=>{
+  if(e.target.id === 'shop-reset'){ checked.clear(); touch(); }
+  if(e.target.dataset.go){ setView(e.target.dataset.go, true); }
+});
+
+/* ================= przepisy ================= */
 function recipesHTML(){
-  return [...sel.entries()].map(([i,mult])=>{
+  const out = document.getElementById('rec-out');
+  if(sel.size === 0){
+    out.innerHTML = `<p class="empty">Nic jeszcze nie wybrano.
+      <button type="button" data-go="plan">Przejdź do dań</button></p>`;
+    return;
+  }
+  out.innerHTML = [...sel.entries()].map(([i,mult])=>{
     const d = DISHES[i];
-    // dania garnkowe gotujesz raz — przepis się skaluje.
-    // dania jednoporcjowe przygotowujesz osobno — przepis zostaje na jedną porcję.
     const rmult = d.batch ? mult : 1;
-    const ing = d.ing.map(([name,qty,unit])=>{
-      return `<li><span style="color:var(--ink);font-weight:400">${name}</span><span>${amount(qty===null?null:qty*rmult, unit)}</span></li>`;
-    }).join('');
+    const ing = d.ing.map(([name,qty,unit])=>
+      `<li><span style="color:var(--ink);font-weight:400">${esc(name)}</span><span>${amount(qty===null?null:qty*rmult, unit)}</span></li>`).join('');
     const meta = d.batch
-      ? `${mult} ${mult===1?'porcja':(mult<5?'porcje':'porcji')} z jednego garnka`
-      : (mult>1 ? `1 porcja · przygotowujesz ${mult} ${mult<5?'razy':'razy'}, każdorazowo świeżo` : '1 porcja');
+      ? `${mult} ${porcje(mult)} z jednego garnka`
+      : (mult>1 ? `1 porcja · przygotowujesz ${mult} razy, każdorazowo świeżo` : '1 porcja');
     return `<article class="recipe">
-      <h3>${d.n}${!d.batch && mult>1 ? ` <span class="rep">×${mult}</span>` : ''}</h3>
+      <h3>${esc(d.n)}${!d.batch && mult>1 ? ` <span class="rep">×${mult}</span>` : ''}</h3>
       <p class="rmeta">${meta} · ${d.kcal} kcal i ${d.prot} g białka na porcję · ${d.time}</p>
       <h4>Składniki${!d.batch && mult>1 ? ' na jedną porcję' : ''}</h4><ul class="ing">${ing}</ul>
-      <h4>Przygotowanie</h4><ol>${d.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+      <h4>Przygotowanie</h4><ol>${d.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
       ${!d.batch && mult>1 ? `<p class="tip">Lista zakupów uwzględnia ${mult} porcje — składniki powyżej są na jedno przygotowanie.</p>` : ''}
       ${d.batch && mult===1 ? `<p class="tip">Danie dobrze znosi gotowanie na zapas — przy ${d.batch} porcjach nakład pracy jest ten sam, a starczy na ${d.batch} dni.</p>` : ''}
-      ${d.tip?`<p class="tip">${d.tip}</p>`:''}
+      ${d.tip?`<p class="tip">${esc(d.tip)}</p>`:''}
     </article>`;
   }).join('');
 }
+document.getElementById('v-rec').addEventListener('click', e=>{
+  if(e.target.dataset.go) setView(e.target.dataset.go, true);
+});
 
-// --- rozpiska dzienna ---
-const SLOT = g => g==='Śniadania' ? 'sn'
-  : (g==='Obiady' || g==='Dania azjatyckie') ? 'ob' : 'ko';
+/* ================= rozpiska dzienna ================= */
+const SLOT = g => g==='Śniadania' ? 'sn' : (g==='Obiady' || g==='Dania azjatyckie') ? 'ob' : 'ko';
 const SLOT_NAME = {sn:'Śniadanie', ob:'Obiad', ko:'Kolacja'};
 
 function buildDays(){
@@ -618,15 +918,13 @@ function buildDays(){
   const n = Math.max(q.sn.length, q.ob.length, q.ko.length);
   const out = [];
   for(let i=0; i<n; i++){
-    const row = {sn:q.sn[i]||null, ob:q.ob[i]||null, ko:q.ko[i]||null};
-    row.kcal = 0; row.prot = 0;
+    const row = {sn:q.sn[i]||null, ob:q.ob[i]||null, ko:q.ko[i]||null, kcal:0, prot:0};
     ['sn','ob','ko'].forEach(k=>{ if(row[k]){ row.kcal += row[k].kcal; row.prot += row[k].prot; } });
     out.push(row);
   }
   out.counts = {sn:q.sn.length, ob:q.ob.length, ko:q.ko.length};
   return out;
 }
-
 function daysHTML(days){
   if(!days.length) return '';
   const c = days.counts, n = days.length;
@@ -635,13 +933,10 @@ function daysHTML(days){
   if(c.sn<n) missing.push(`${n-c.sn} śniadań`);
   if(c.ob<n) missing.push(`${n-c.ob} obiadów`);
   if(c.ko<n) missing.push(`${n-c.ko} kolacji`);
-
   let html = `<div class="days-head"><h2>Rozpiska dnia po dniu</h2><div class="rule"></div>
     <div class="days-note">${n} ${n===1?'dzień':'dni'}</div></div>
-    <div class="balance">
-      ${chip('sn','śniadań')}${chip('ob','obiadów')}${chip('ko','kolacji')}
-      <span class="chip"><b>${n}</b> ${n===1?'dzień':'dni'} razem</span>
-    </div>`;
+    <div class="balance">${chip('sn','śniadań')}${chip('ob','obiadów')}${chip('ko','kolacji')}
+      <span class="chip"><b>${n}</b> ${n===1?'dzień':'dni'} razem</span></div>`;
   if(missing.length){
     html += `<p class="balance-hint">Liczbę dni wyznacza najdłuższa kolejka porcji. Żeby dni były pełne, brakuje: ${missing.join(', ')}.</p>`;
   }
@@ -650,9 +945,8 @@ function daysHTML(days){
       const d = r[k];
       return `<div class="slot${d?'':' zero'}">
         <span class="lab">${SLOT_NAME[k]}</span>
-        <span class="nm">${d ? d.n : '0'}</span>
-        <span class="val">${d ? d.kcal+' kcal · '+d.prot+' g' : '0 kcal · 0 g'}</span>
-      </div>`;
+        <span class="nm">${d ? esc(d.n) : '0'}</span>
+        <span class="val">${d ? d.kcal+' kcal · '+d.prot+' g' : '0 kcal · 0 g'}</span></div>`;
     }).join('');
     const low = r.kcal>0 && r.kcal < 1900;
     html += `<div class="day">
@@ -664,9 +958,35 @@ function daysHTML(days){
   return html;
 }
 
-// --- render ---
+/* ================= nawigacja ================= */
+function setView(v, byUser){
+  view = v;
+  if(byUser) userPickedView = true;
+  document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-current', b.dataset.v===v));
+  document.getElementById('v-plan').hidden = v!=='plan';
+  document.getElementById('v-shop').hidden = v!=='shop';
+  document.getElementById('v-rec').hidden  = v!=='rec';
+  render();
+  window.scrollTo({top:0, behavior:'instant'});
+}
+document.getElementById('nav').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-v]');
+  if(b) setView(b.dataset.v, true);
+});
+
+function paintPill(){
+  const pill = document.getElementById('pill-shop');
+  if(sel.size === 0){ pill.hidden = true; return; }
+  const {all} = buildList();
+  const left = all.filter(v=>!checked.has(v.key)).length;
+  pill.hidden = false;
+  pill.textContent = left;
+}
+
+/* ================= render ================= */
 function render(){
   paintCards();
+  paintPill();
 
   let kcal=0, prot=0, n=0;
   sel.forEach((mult,i)=>{ const d=DISHES[i]; kcal += d.kcal*d.por*mult; prot += d.prot*d.por*mult; n += mult; });
@@ -687,25 +1007,80 @@ function render(){
   document.getElementById('f-kcal').style.width = Math.min(100, avgK/2100*100)+'%';
   document.getElementById('f-prot').style.width = Math.min(100, avgP/130*100)+'%';
 
-  tShop.setAttribute('aria-selected', tab==='shop');
-  tRec.setAttribute('aria-selected', tab==='rec');
-
-  const out = document.getElementById('result');
-  if(sel.size === 0){
-    out.innerHTML = `<p class="empty">Nic jeszcze nie wybrano. Zaznacz dania powyżej — lista zakupów i przepisy złożą się tutaj.</p>`;
-    return;
-  }
-  out.innerHTML = tab==='shop' ? shoppingHTML() : recipesHTML();
+  if(view === 'shop') shopHTML();
+  if(view === 'rec')  recipesHTML();
 }
 
-document.getElementById('result').addEventListener('change', e=>{
-  if(e.target.type !== 'checkbox') return;
-  const id = e.target.id;
-  checked.has(id) ? checked.delete(id) : checked.add(id);
-  e.target.closest('.item').classList.toggle('done', checked.has(id));
+/* ================= panel ustawień ================= */
+const $ = id => document.getElementById(id);
+$('s-open').addEventListener('click', ()=>{
+  const s = $('setup');
+  s.open = true;
+  s.scrollIntoView({behavior:'smooth', block:'start'});
+});
+$('cfg-save').addEventListener('click', ()=>{
+  const db = $('cfg-db').value.trim().replace(/\/+$/,'');
+  const key = $('cfg-key').value.trim();
+  if(db && !/^https:\/\/.+\.firebasedatabase\.app$|^https:\/\/.+\.firebaseio\.com$/.test(db)){
+    $('cfg-msg').textContent = 'Adres powinien wyglądać tak: https://nazwa-default-rtdb.europe-west1.firebasedatabase.app';
+    return;
+  }
+  localStorage.setItem(LS_CFG, JSON.stringify({db, key: key || 'planer'}));
+  loadCfg();
+  $('cfg-msg').textContent = db ? 'Zapisano. Sprawdzam połączenie…' : 'Synchronizacja wyłączona.';
+  if(cloudURL()){ stamp = Date.now(); saveLocal(); push(); } else { status('Sync wyłączony — dane tylko na tym urządzeniu','off'); }
+});
+$('cfg-link').addEventListener('click', async ()=>{
+  if(!cfg.db){ $('cfg-msg').textContent = 'Najpierw wpisz adres bazy i kliknij „Zapisz i połącz".'; return; }
+  const payload = btoa(unescape(encodeURIComponent(JSON.stringify({db:cfg.db, key:cfg.key}))));
+  const link = location.origin + location.pathname + '#sync=' + payload;
+  try{
+    await navigator.clipboard.writeText(link);
+    $('cfg-msg').textContent = 'Link skopiowany — wyślij go sobie i otwórz raz na telefonie.';
+  }catch(e){
+    $('cfg-msg').textContent = link;
+  }
+});
+$('cfg-clear').addEventListener('click', ()=>{
+  localStorage.removeItem(LS_CFG);
+  $('cfg-db').value = ''; $('cfg-key').value = '';
+  loadCfg();
+  $('cfg-msg').textContent = 'Wyłączone. Dane zostają na tym urządzeniu.';
+  status('Sync wyłączony — dane tylko na tym urządzeniu','off');
 });
 
-render();
+/* ================= start ================= */
+(function init(){
+  // konfiguracja przekazana linkiem z komputera
+  const m = location.hash.match(/#sync=(.+)$/);
+  if(m){
+    try{
+      const o = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+      if(o && o.db) localStorage.setItem(LS_CFG, JSON.stringify({db:o.db, key:o.key||'planer'}));
+    }catch(e){}
+    history.replaceState(null,'',location.pathname);
+  }
+  loadCfg();
+  $('cfg-db').value = cfg.db;
+  $('cfg-key').value = cfg.key;
+
+  loadLocal();
+  setView('plan');
+
+  if(!cloudURL()){
+    status('Sync wyłączony — dane tylko na tym urządzeniu', 'off');
+  }else{
+    status('Łączę…', 'busy');
+    pull().then(()=>{
+      if(!userPickedView && window.innerWidth < 760 && sel.size > 0) setView('shop');
+    });
+  }
+  if(!cloudURL() && window.innerWidth < 760 && sel.size > 0) setView('shop');
+
+  setInterval(()=>{ if(document.visibilityState === 'visible') pull(true); }, 12000);
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'visible') pull(true); });
+  window.addEventListener('online', ()=>{ pending ? push() : pull(true); });
+})();
 </script>
 </body>
 </html>
