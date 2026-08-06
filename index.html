@@ -305,6 +305,44 @@ h1{
   font-weight:700;margin:22px 0 4px;padding-top:14px;border-top:2px solid var(--line);
 }
 
+/* ---- zdjęcia i notatki ---- */
+.card-foto{
+  width:100%;height:104px;object-fit:cover;display:block;
+  border-radius:2px;background:var(--porcelain);margin-bottom:3px;
+}
+.rfoto{margin:12px 0 2px}
+.rfoto img{
+  width:100%;max-height:340px;object-fit:cover;display:block;
+  border-radius:2px;background:var(--porcelain);
+}
+.fdrop{
+  border:1.5px dashed var(--line-strong);border-radius:2px;
+  padding:22px 14px;text-align:center;color:var(--muted);
+  font-size:13.5px;font-weight:600;cursor:pointer;display:block;
+  transition:border-color .14s,color .14s;
+}
+.fdrop:hover,.fdrop.over{border-color:var(--beet);color:var(--beet)}
+.frow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.fbtn{
+  font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--line);
+  background:var(--surface);color:var(--muted);padding:7px 12px;
+  border-radius:2px;cursor:pointer;display:inline-block;
+}
+.fbtn:hover{border-color:var(--beet);color:var(--beet)}
+.fbtn input{display:none}
+.fstat{font-size:11.5px;color:var(--muted);font-weight:600;margin-left:auto}
+.rnote{
+  width:100%;min-height:74px;font:inherit;font-size:14.5px;line-height:1.5;
+  padding:9px 10px;border:1px solid var(--line);border-radius:2px;
+  background:var(--porcelain);color:var(--ink);resize:vertical;
+}
+.rnote:focus{outline:2px solid var(--beet);outline-offset:1px;background:var(--surface)}
+.note-flag{
+  display:inline-block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  font-weight:700;color:var(--carb);border:1px solid var(--carb);
+  padding:1px 5px;border-radius:2px;
+}
+
 /* ---- przepisy ---- */
 .recipe{padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--line);background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:16px 15px;margin-bottom:10px}
 .recipe h3{font-family:Bitter,serif;font-size:19px;font-weight:700;line-height:1.25}
@@ -478,9 +516,16 @@ footer strong{color:var(--ink)}
         ".read": true,
         ".write": true
       }
+    },
+    "foto": {
+      "$klucz": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }</pre>
+    <p class="note">Gałąź <code>foto</code> trzyma zdjęcia dań. Są zmniejszane w przeglądarce do ok. 60 kB, więc nawet komplet zmieści się w darmowym limicie z zapasem. Pobierają się osobno od listy zakupów, żeby nie spowalniać synchronizacji w sklepie.</p>
     <p class="note">Dane widzi każdy, kto zna adres bazy i klucz — dlatego klucz ma być długi i nieoczywisty. To lista zakupów, nie hasła, ale nie wklejaj tu nic wrażliwego.</p>
     <p class="note">Chcesz mieć to wpisane na stałe dla wszystkich urządzeń? W pliku <code>index.html</code> na samym początku skryptu uzupełnij <code>SYNC_DOMYSLNY</code> — wtedy nic nie trzeba klikać.</p>
   </div>
@@ -666,6 +711,11 @@ const DISHES = [
 const IDX = new Map(DISHES.map((d,i)=>[d.n,i]));
 const sel = new Map();      // index dania -> mnożnik
 const checked = new Set();  // "nazwa|jednostka" odhaczone w sklepie
+const notes = new Map();    // nazwa dania -> własna notatka
+const photos = new Map();   // nazwa dania -> zdjęcie jako data URL
+const SLUG = new Map(DISHES.map(d=>[d.n,
+  d.n.replace(/ł/g,'l').replace(/Ł/g,'L').normalize('NFD').replace(/[̀-ͯ]/g,'')
+     .replace(/[^A-Za-z0-9]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase()]));
 let stamp = 0;              // znacznik ostatniej zmiany (ms)
 let view = 'plan';
 let userPickedView = false;
@@ -699,15 +749,17 @@ function amount(qty, unit){
 }
 
 function snapshot(){
-  const s = {};
+  const s = {}, nt = {};
   sel.forEach((m,i)=>{ s[DISHES[i].n] = m; });
-  return { v:1, ts:stamp, sel:s, checked:[...checked] };
+  notes.forEach((t,n)=>{ if(t && t.trim()) nt[n] = t; });
+  return { v:1, ts:stamp, sel:s, checked:[...checked], notes:nt };
 }
 function applySnapshot(d){
   if(!d || typeof d !== 'object') return false;
-  sel.clear(); checked.clear();
+  sel.clear(); checked.clear(); notes.clear();
   Object.entries(d.sel||{}).forEach(([n,m])=>{ if(IDX.has(n) && m>0) sel.set(IDX.get(n), m); });
   (d.checked||[]).forEach(k=>checked.add(k));
+  Object.entries(d.notes||{}).forEach(([n,t])=>{ if(IDX.has(n)) notes.set(n, t); });
   stamp = d.ts || 0;
   return true;
 }
@@ -797,6 +849,91 @@ function touch(){
   render();
 }
 
+/* ================= zdjęcia ================= */
+const LS_FOTO = 'planer-foto-v1';
+let fotoPulled = 0;
+
+function fotoBase(){ return cfg.db ? cfg.db + '/foto/' + encodeURIComponent(cfg.key) : null; }
+
+function saveFotoLocal(){
+  try{ localStorage.setItem(LS_FOTO, JSON.stringify(Object.fromEntries(photos))); }
+  catch(e){ /* pamięć przeglądarki pełna — zdjęcia zostają w chmurze */ }
+}
+function loadFotoLocal(){
+  try{
+    const d = JSON.parse(localStorage.getItem(LS_FOTO) || 'null');
+    if(d) Object.entries(d).forEach(([n,u])=>{ if(IDX.has(n) && typeof u === 'string') photos.set(n,u); });
+  }catch(e){}
+}
+async function pullPhotos(force){
+  const base = fotoBase();
+  if(!base) return;
+  if(!force && Date.now() - fotoPulled < 60000) return;
+  fotoPulled = Date.now();
+  try{
+    const r = await fetch(base + '.json?_=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) return;
+    const d = await r.json();
+    if(!d) return;
+    const bySlug = new Map([...SLUG].map(([n,s])=>[s,n]));
+    let zmiana = false;
+    Object.entries(d).forEach(([s,u])=>{
+      const n = bySlug.get(s);
+      if(n && typeof u === 'string' && photos.get(n) !== u){ photos.set(n,u); zmiana = true; }
+    });
+    if(zmiana){ saveFotoLocal(); render(); }
+  }catch(e){}
+}
+async function pushPhoto(name){
+  const base = fotoBase();
+  if(!base){ status('Zdjęcie zapisane na tym urządzeniu · sync wyłączony', 'off'); return; }
+  try{
+    const r = await fetch(base + '/' + SLUG.get(name) + '.json',
+      {method:'PUT', body: JSON.stringify(photos.get(name) || null), headers:{'Content-Type':'application/json'}});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    status('Zdjęcie zsynchronizowane · ' + godzina(), 'ok');
+  }catch(e){ status('Zdjęcie zapisane lokalnie — brak połączenia', 'off'); }
+}
+
+// telefon robi zdjęcie 4 MB; do bazy ma trafić ok. 60 kB, inaczej synchronizacja siada
+async function compress(file, maxPx = 720, maxKB = 90){
+  let bmp;
+  try{ bmp = await createImageBitmap(file, {imageOrientation:'from-image'}); }
+  catch(e){
+    bmp = await new Promise((res,rej)=>{
+      const im = new Image();
+      im.onload = ()=>res(im); im.onerror = ()=>rej(new Error('zły plik'));
+      im.src = URL.createObjectURL(file);
+    });
+  }
+  const sc = Math.min(1, maxPx/Math.max(bmp.width, bmp.height));
+  const w = Math.round(bmp.width*sc), h = Math.round(bmp.height*sc);
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  c.getContext('2d').drawImage(bmp, 0, 0, w, h);
+  let q = 0.72, out = c.toDataURL('image/jpeg', q);
+  while(out.length*0.75 > maxKB*1024 && q > 0.3){ q -= 0.09; out = c.toDataURL('image/jpeg', q); }
+  if(bmp.close) bmp.close();
+  return out;
+}
+async function setPhoto(name, file){
+  if(!file || !/^image\//.test(file.type)){ status('To nie jest plik ze zdjęciem', 'off'); return; }
+  status('Przetwarzam zdjęcie…', 'busy');
+  try{
+    photos.set(name, await compress(file));
+    saveFotoLocal();
+    render();
+    pushPhoto(name);
+  }catch(e){ status('Nie udało się wczytać tego zdjęcia', 'off'); }
+}
+function delPhoto(name){
+  photos.delete(name);
+  saveFotoLocal();
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  render();
+  pushPhoto(name);
+}
+
 /* ================= widok: karty dań ================= */
 const menu = document.getElementById('menu');
 [...new Set(DISHES.map(d=>d.g))].forEach(g=>{
@@ -819,8 +956,11 @@ const menu = document.getElementById('menu');
 function cardHTML(d, i){
   const m = sel.get(i);
   const batch = d.batch ? `<span>garnek na ${d.batch}</span>` : '';
+  const th = photos.get(d.n);
+  const flag = notes.has(d.n) ? ' <span class="note-flag">notatka</span>' : '';
   return `
-    <span class="card-name">${esc(d.n)}${d.wknd?' <span class="badge">weekend</span>':''}</span>
+    ${th ? `<img class="card-foto" src="${th}" alt="" loading="lazy">` : ''}
+    <span class="card-name">${esc(d.n)}${d.wknd?' <span class="badge">weekend</span>':''}${flag}</span>
     <span class="card-meta"><span>${d.kcal} kcal</span><span>B ${d.prot} · W ${d.carb} · T ${d.fat} g</span><span>${d.time}</span>${batch}</span>
     ${m ? `<span class="qty"><button type="button" data-act="minus" aria-label="Mniej porcji">−</button><span>${m} ${porcje(m)}</span><button type="button" data-act="plus" aria-label="Więcej porcji">+</button>${d.batch&&m!==d.batch?`<button type="button" data-act="batch" class="q-batch">${d.batch}×</button>`:''}</span>` : ''}`;
 }
@@ -947,19 +1087,70 @@ function recipesHTML(){
     const meta = d.batch
       ? `${mult} ${porcje(mult)} z jednego garnka`
       : (mult>1 ? `1 porcja · przygotowujesz ${mult} razy, każdorazowo świeżo` : '1 porcja');
+    const foto = photos.get(d.n);
+    const nm = esc(d.n);
+    const fotoBlok = foto
+      ? `<div class="rfoto"><img src="${foto}" alt="${nm}" loading="lazy">
+           <div class="frow">
+             <label class="fbtn">Zmień zdjęcie<input type="file" accept="image/*" data-foto="${nm}"></label>
+             <button type="button" class="fbtn" data-delfoto="${nm}">Usuń zdjęcie</button>
+           </div></div>`
+      : `<div class="rfoto"><label class="fdrop" data-drop="${nm}">Dodaj zdjęcie tego dania — kliknij albo przeciągnij plik
+           <input type="file" accept="image/*" data-foto="${nm}" hidden></label></div>`;
+    const note = notes.get(d.n) || '';
     return `<article class="recipe">
-      <h3>${esc(d.n)}${!d.batch && mult>1 ? ` <span class="rep">×${mult}</span>` : ''}</h3>
+      <h3>${nm}${!d.batch && mult>1 ? ` <span class="rep">×${mult}</span>` : ''}</h3>
       <p class="rmeta">${meta} · na porcję: ${d.kcal} kcal, białko ${d.prot} g, węglowodany ${d.carb} g, tłuszcz ${d.fat} g · ${d.time}</p>
+      ${fotoBlok}
       <h4>Składniki${!d.batch && mult>1 ? ' na jedną porcję' : ''}</h4><ul class="ing">${ing}</ul>
       <h4>Przygotowanie</h4><ol>${d.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
+      <h4>Moje uwagi</h4>
+      <textarea class="rnote" data-note="${nm}" placeholder="Co wyszło, co zmienić następnym razem, ile faktycznie zeszło składników…">${esc(note)}</textarea>
       ${!d.batch && mult>1 ? `<p class="tip">Lista zakupów uwzględnia ${mult} porcje — składniki powyżej są na jedno przygotowanie.</p>` : ''}
       ${d.batch && mult===1 ? `<p class="tip">Danie dobrze znosi gotowanie na zapas — przy ${d.batch} porcjach nakład pracy jest ten sam, a starczy na ${d.batch} dni.</p>` : ''}
       ${d.tip?`<p class="tip">${esc(d.tip)}</p>`:''}
     </article>`;
   }).join('');
 }
-document.getElementById('v-rec').addEventListener('click', e=>{
+const vRec = document.getElementById('v-rec');
+vRec.addEventListener('click', e=>{
   if(e.target.dataset.go) setView(e.target.dataset.go, true);
+  const del = e.target.closest('[data-delfoto]');
+  if(del) delPhoto(del.dataset.delfoto);
+});
+vRec.addEventListener('change', e=>{
+  const inp = e.target.closest('input[type=file][data-foto]');
+  if(inp && inp.files && inp.files[0]) setPhoto(inp.dataset.foto, inp.files[0]);
+});
+let noteTimer = null;
+vRec.addEventListener('input', e=>{
+  const ta = e.target.closest('textarea[data-note]');
+  if(!ta) return;
+  const n = ta.dataset.note;
+  ta.value.trim() ? notes.set(n, ta.value) : notes.delete(n);
+  stamp = Date.now();
+  saveLocal();
+  queuePush();
+  clearTimeout(noteTimer);
+  noteTimer = setTimeout(paintCards, 700);
+});
+['dragenter','dragover'].forEach(ev => vRec.addEventListener(ev, e=>{
+  const z = e.target.closest('.fdrop');
+  if(!z) return;
+  e.preventDefault();
+  z.classList.add('over');
+}));
+vRec.addEventListener('dragleave', e=>{
+  const z = e.target.closest('.fdrop');
+  if(z) z.classList.remove('over');
+});
+vRec.addEventListener('drop', e=>{
+  const z = e.target.closest('.fdrop');
+  if(!z) return;
+  e.preventDefault();
+  z.classList.remove('over');
+  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if(f) setPhoto(z.dataset.drop, f);
 });
 
 /* ================= rozpiska dzienna ================= */
@@ -1082,6 +1273,7 @@ function setView(v, byUser){
   document.getElementById('v-plan').hidden = v!=='plan';
   document.getElementById('v-shop').hidden = v!=='shop';
   document.getElementById('v-rec').hidden  = v!=='rec';
+  if(v === 'rec') pullPhotos();
   render();
   window.scrollTo({top:0, behavior:'instant'});
 }
@@ -1131,7 +1323,12 @@ function render(){
   document.getElementById('f-carb').style.width = Math.min(100, avgW/CEL.carb*100)+'%';
 
   if(view === 'shop') shopHTML();
-  if(view === 'rec')  recipesHTML();
+  // nie przerysowuj przepisów, kiedy ktoś właśnie pisze notatkę — skasowałoby to kursor
+  if(view === 'rec' && !pisze()) recipesHTML();
+}
+function pisze(){
+  const a = document.activeElement;
+  return !!(a && a.tagName === 'TEXTAREA' && a.closest('#v-rec'));
 }
 
 /* ================= panel ustawień ================= */
@@ -1188,12 +1385,14 @@ $('cfg-clear').addEventListener('click', ()=>{
   $('cfg-key').value = cfg.key;
 
   loadLocal();
+  loadFotoLocal();
   setView('plan');
 
   if(!cloudURL()){
     status('Sync wyłączony — dane tylko na tym urządzeniu', 'off');
   }else{
     status('Łączę…', 'busy');
+    pullPhotos(true);
     pull().then(()=>{
       if(!userPickedView && window.innerWidth < 760 && sel.size > 0) setView('shop');
     });
