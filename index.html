@@ -567,6 +567,16 @@ const K = {
 // kolejność obchodzenia sklepu — mrożonki na końcu, żeby nie zdążyły odtajać
 const ORDER = ['w','p','n','m','s','k','t','x','z'];
 
+// przeliczniki na gramy — dzięki nim „3 marchewki" i „500 g marchwi" schodzą się
+// w jedną pozycję na liście zakupów, zamiast wisieć jako dwa osobne wpisy
+const NA_GRAMY = {
+  'Marchew|szt.':80, 'Ziemniaki|szt.':120,
+  'Jogurt grecki|łyżka':20, 'Oliwa|łyżka':10, 'Oliwa|łyżeczka':5
+};
+
+// jednostek niepodzielnych nie kupisz w kawałku — na liście zakupów zaokrąglamy w górę
+const CALE = new Set(['szt.','puszka','ząbek','kromka','torebka']);
+
 // [nazwa, ilość, jednostka, kategoria]  — ilość null = "do smaku"
 const DISHES = [
 {g:"Śniadania", n:"Owsianka", kcal:635, prot:29, carb:66, fat:28, por:1, time:"10 min", prep:"Odmierz płatki, otręby i siemię do jednej miski. Orzechy grubo posiekaj.",
@@ -608,17 +618,17 @@ const DISHES = [
  tip:"Najwięcej białka ze wszystkich śniadań w planie — 45 g przy zaledwie 500 kcal."},
 
 {g:"Obiady", n:"Gulasz z kaszą gryczaną", kcal:815, prot:53, carb:96, fat:24, por:1, time:"90 min", batch:3, prep:"Mięso osusz i pokrój w kostkę. Cebulę posiekaj, czosnek przeciśnij, marchew w plastry, paprykę w kostkę. Odmierz passatę i przyprawy, kapustę odciśnij.",
- ing:[["Mięso gulaszowe (wieprz. lub wołowe)",233.3333,"g","m"],["Cebula",0.6667,"szt.","w"],["Czosnek",0.6667,"ząbek","w"],["Marchew",1,"szt.","w"],["Papryka",0.3333,"szt.","w"],["Passata pomidorowa",100,"ml","k"],["Kasza gryczana",1.25,"torebka","s"],["Kapusta kiszona",66.6667,"g","w"],["Oliwa rafinowana",0.75,"łyżka","t"],["Papryka słodka",null,"","x"],["Liść laurowy, ziele angielskie",null,"","x"]],
+ ing:[["Mięso gulaszowe (wieprz. lub wołowe)",233.3333,"g","m"],["Cebula",0.6667,"szt.","w"],["Czosnek",0.6667,"ząbek","w"],["Marchew",1,"szt.","w"],["Papryka",0.3333,"szt.","w"],["Passata pomidorowa",100,"ml","k"],["Kasza gryczana",1.25,"torebka","s"],["Kapusta kiszona",66.6667,"g","w"],["Oliwa rafinowana",0.75,"łyżka","t"],["Papryka słodka",null,"","x"],["Liść laurowy",null,"","x"],["Ziele angielskie",null,"","x"]],
  steps:["Mięso osusz i obsmaż na oliwie partiami, aż się zarumieni. Nie wrzucaj wszystkiego naraz.","Dodaj posiekaną cebulę, zeszklij, wrzuć czosnek.","Dorzuć marchew i paprykę, wsyp słodką paprykę.","Wlej passatę i ok. 200 ml wody, dorzuć liść laurowy i ziele.","Duś pod przykryciem 70–90 minut (wołowina 1,5–2 h).","Dopraw. Podawaj z kaszą gryczaną i surówką z kiszonej kapusty."],
  tip:"Cook4Me: podsmażanie, potem 20–25 min pod ciśnieniem (wołowina 30–35 min). Wlej tylko 150 ml wody. Rozprężanie naturalne. Odetnij widoczny tłuszcz przed obsmażeniem."},
 
 {g:"Obiady", n:"Barszcz ukraiński z fasolą", kcal:800, prot:43, carb:121, fat:16, por:1, time:"90 min", batch:3, prep:"Buraki, marchew i pietruszkę zetrzyj na tarce. Ziemniaki w kostkę, kapustę w paski. Czosnek przeciśnij, cytrynę wyciśnij, fasolę odsącz i przepłucz.",
- ing:[["Mięso gulaszowe (wieprz. lub wołowe)",133.3333,"g","m"],["Buraki",200,"g","w"],["Marchew",0.6667,"szt.","w"],["Pietruszka korzeń",0.3333,"szt.","w"],["Ziemniaki",0.6667,"szt.","w"],["Kapusta biała",100,"g","w"],["Czosnek",0.6667,"ząbek","w"],["Cytryna",0.1667,"szt.","w"],["Fasola czerwona",0.3333,"puszka","k"],["Passata pomidorowa",66.6667,"ml","k"],["Jogurt grecki",1,"łyżka","n"],["Chleb razowy",3,"kromka","p"],["Majeranek, liść laurowy",null,"","x"]],
+ ing:[["Mięso gulaszowe (wieprz. lub wołowe)",133.3333,"g","m"],["Buraki",200,"g","w"],["Marchew",0.6667,"szt.","w"],["Pietruszka korzeń",0.3333,"szt.","w"],["Ziemniaki",0.6667,"szt.","w"],["Kapusta biała",100,"g","w"],["Czosnek",0.6667,"ząbek","w"],["Cytryna",0.1667,"szt.","w"],["Fasola czerwona",0.3333,"puszka","k"],["Passata pomidorowa",66.6667,"ml","k"],["Jogurt grecki",1,"łyżka","n"],["Chleb razowy",3,"kromka","p"],["Majeranek",null,"","x"],["Liść laurowy",null,"","x"]],
  steps:["Ugotuj wywar na mięsie (ok. 60 minut). Wyjmij mięso i pokrój.","Do wywaru dodaj starte buraki, marchew, pietruszkę, ziemniaki w kostce i kapustę w paskach.","Wlej passatę i gotuj ok. 25 minut, aż warzywa zmiękną.","Dodaj odsączoną fasolę i mięso.","Zakwaś sokiem z cytryny, dopraw czosnkiem, majerankiem, solą i pieprzem.","Podawaj z łyżką jogurtu i kromką razowego chleba."],
  tip:"Cook4Me — dwa etapy: mięso 25 min, otwórz, warzywa kolejne 6–8 min. Fasolę, cytrynę i mięso dodaj po otwarciu. Barszcz z dnia na dzień smakuje lepiej i trzyma się 4 dni."},
 
 {g:"Obiady", n:"Wieprzowina w sosie chrzanowym", kcal:805, prot:63, carb:99, fat:18, por:1, time:"65 min", batch:2, prep:"Mięso pokrój i rozbij tłuczkiem, oprósz solą i pieprzem. Czosnek zetrzyj. Ziemniaki obierz i pokrój. Koperek i natkę posiekaj.",
- ing:[["Szynka wieprzowa (chuda)",210,"g","m"],["Ziemniaki",400,"g","w"],["Czosnek",1,"ząbek","w"],["Bulion warzywny",125,"ml","k"],["Chrzan tarty",20,"g","k"],["Jogurt grecki",75,"g","n"],["Fasolka szparagowa mrożona",150,"g","z"],["Oliwa",0.5,"łyżeczka","t"],["Koperek, natka",null,"","w"]],
+ ing:[["Szynka wieprzowa (chuda)",210,"g","m"],["Ziemniaki",400,"g","w"],["Czosnek",1,"ząbek","w"],["Bulion warzywny",125,"ml","k"],["Chrzan tarty",20,"g","k"],["Jogurt grecki",75,"g","n"],["Fasolka szparagowa mrożona",150,"g","z"],["Oliwa",0.5,"łyżeczka","t"],["Natka pietruszki",null,"","w"],["Koperek",null,"","w"]],
  steps:["Mięso pokrój na mniejsze kawałki i rozbij tłuczkiem. Oprósz solą i pieprzem.","W garnku podsmaż na oliwie starty czosnek, wlej bulion i zagotuj.","Osobno obsmaż mięso na suchej, dobrze rozgrzanej patelni.","Przełóż do gotującego bulionu, przykryj i gotuj 40–50 minut. Po 20 minutach dodaj chrzan.","Ziemniaki ugotuj i utłucz na puree. Fasolkę ugotuj osobno.","Zdejmij garnek z ognia. Zahartuj jogurt kilkoma łyżkami bulionu i wmieszaj razem z koperkiem.","Podawaj z puree i fasolką, posyp natką."],
  tip:"Nabiał zawsze po zdjęciu z ognia — jogurt wrzucony do wrzątku się zwarzy. Chrzan pod ciśnieniem traci ostrość, więc w Cook4Me dodaj go po otwarciu (18–20 min)."},
 
@@ -628,27 +638,27 @@ const DISHES = [
  tip:"Polędwiczka ma ok. 3% tłuszczu — najchudsze mięso wieprzowe. Nie przesmażaj: w środku ma zostać lekko różowa."},
 
 {g:"Obiady", n:"Kurczak po tajsku", kcal:805, prot:51, carb:86, fat:29, por:1, time:"25 min", batch:2, prep:"Nastaw ryż, a potem pokrój wszystko, zanim cokolwiek trafi na patelnię: pierś w paski 1,5 cm, cebulę w piórka, marchew w cienkie słupki, paprykę w paski. Czosnek i imbir zetrzyj, cytrynę wyciśnij. Odmierz pastę curry i mleko kokosowe.",
- ing:[["Pierś z kurczaka",250,"g","m"],["Cebula",0.5,"szt.","w"],["Czosnek",1,"ząbek","w"],["Imbir świeży",10,"g","w"],["Marchew",1,"szt.","w"],["Papryka",0.5,"szt.","w"],["Cytryna",0.25,"szt.","w"],["Mleko kokosowe light",200,"ml","k"],["Pasta curry",1,"łyżka","k"],["Sos sojowy",0.5,"łyżka","k"],["Fasolka szparagowa mrożona",75,"g","z"],["Ryż basmati",65,"g","s"],["Oliwa rafinowana",0.75,"łyżka","t"],["Natka lub kolendra",null,"","w"]],
+ ing:[["Pierś z kurczaka",250,"g","m"],["Cebula",0.5,"szt.","w"],["Czosnek",1,"ząbek","w"],["Imbir świeży",10,"g","w"],["Marchew",1,"szt.","w"],["Papryka",0.5,"szt.","w"],["Cytryna",0.25,"szt.","w"],["Mleko kokosowe light",200,"ml","k"],["Pasta curry",1,"łyżka","k"],["Sos sojowy",0.5,"łyżka","k"],["Fasolka szparagowa mrożona",75,"g","z"],["Ryż basmati",65,"g","s"],["Oliwa rafinowana",0.75,"łyżka","t"],["Natka pietruszki",null,"","w"]],
  steps:["Nastaw ryż — basmati gotuje się ok. 12 minut.","Pierś pokrój w paski 1,5 cm. Obsmaż na rozgrzanej oliwie 3–4 minuty i wyjmij.","Zeszklij cebulę (2 min), dodaj czosnek i starty imbir, smaż 30 sekund.","Wsyp pastę curry i smaż minutę, cały czas mieszając.","Dodaj marchew i paprykę. Smaż 2 minuty.","Wlej mleko kokosowe, wrzuć mięso i fasolkę. Duś 12–15 minut bez przykrycia.","Zdejmij z ognia. Dopraw sosem sojowym i sokiem z cytryny. Spróbuj i dopraw.","Podawaj z ryżem, posypane natką."],
  tip:"Pastę curry koniecznie podsmaż w tłuszczu — wrzucona prosto do mleka będzie płaska. Kwas dodawaj na końcu. Wybieraj mleko bez dodatków lub z gumą guar (E412), unikaj karagenu (E407)."},
 
 {g:"Obiady", n:"Dorsz po grecku", kcal:800, prot:48, carb:104, fat:21, por:1, time:"40 min", batch:2, prep:"Rozgrzej piekarnik do 200°C. Filety pokrój, dopraw i skrop cytryną. Marchew i pietruszkę zetrzyj, cebulę posiekaj. Ziemniaki obierz.",
- ing:[["Filet z dorsza (lub mintaj)",200,"g","m"],["Marchew",250,"g","w"],["Cebula",0.5,"szt.","w"],["Pietruszka korzeń",0.5,"szt.","w"],["Cytryna",0.25,"szt.","w"],["Ziemniaki",370,"g","w"],["Passata pomidorowa",125,"ml","k"],["Oliwa",1.5,"łyżka","t"],["Liść laurowy, papryka słodka",null,"","x"]],
+ ing:[["Filet z dorsza (lub mintaj)",200,"g","m"],["Marchew",250,"g","w"],["Cebula",0.5,"szt.","w"],["Pietruszka korzeń",0.5,"szt.","w"],["Cytryna",0.25,"szt.","w"],["Ziemniaki",370,"g","w"],["Passata pomidorowa",125,"ml","k"],["Oliwa",1.5,"łyżka","t"],["Liść laurowy",null,"","x"],["Papryka słodka",null,"","x"]],
  steps:["Filety pokrój, dopraw, skrop cytryną. Upiecz w 200°C przez 15 minut.","Marchew i pietruszkę zetrzyj na tarce. Zeszklij na oliwie z cebulą.","Dodaj passatę, liść laurowy i słodką paprykę. Duś ok. 20 minut.","Rybę przełóż warstwą warzyw.","Podawaj ciepłe lub na zimno, z ziemniakami albo pieczywem."],
  tip:"Trzyma się 3–4 dni i z dnia na dzień smakuje lepiej. Dorsz i mintaj to ryby dziko poławiane — szukaj oznaczenia MSC."},
 
 {g:"Obiady", n:"Klopsiki w sosie pomidorowym", kcal:805, prot:42, carb:75, fat:38, por:1, time:"45 min", batch:3, prep:"Jedną cebulę zetrzyj do mięsa, drugą posiekaj do sosu, czosnek przeciśnij. Ziemniaki obierz i wstaw do gotowania. Przygotuj miskę z wodą do zwilżania dłoni.",
- ing:[["Mięso mielone wołowo-wieprzowe",166.6667,"g","m"],["Jajka",0.3333,"szt.","n"],["Bułka tarta",20,"g","s"],["Cebula",0.6667,"szt.","w"],["Czosnek",0.6667,"ząbek","w"],["Passata pomidorowa",166.6667,"ml","k"],["Ziemniaki",360,"g","w"],["Oliwa rafinowana",1.25,"łyżka","t"],["Majeranek, oregano",null,"","x"],["Natka",null,"","w"]],
+ ing:[["Mięso mielone wołowo-wieprzowe",166.6667,"g","m"],["Jajka",0.3333,"szt.","n"],["Bułka tarta",20,"g","s"],["Cebula",0.6667,"szt.","w"],["Czosnek",0.6667,"ząbek","w"],["Passata pomidorowa",166.6667,"ml","k"],["Ziemniaki",360,"g","w"],["Oliwa rafinowana",1.25,"łyżka","t"],["Majeranek",null,"","x"],["Oregano",null,"","x"],["Natka pietruszki",null,"","w"]],
  steps:["Mięso wymieszaj z jajkiem, bułką tartą i drobno startą cebulą. Dopraw solą, pieprzem i majerankiem.","Uformuj klopsiki wielkości orzecha włoskiego. Wilgotne dłonie ułatwiają formowanie.","Obsmaż je na oliwie ze wszystkich stron i odłóż.","Na tej samej patelni zeszklij drugą cebulę z czosnkiem, wlej passatę i oregano.","Włóż klopsiki do sosu i duś pod przykryciem 20 minut.","Ziemniaki ugotuj i utłucz na puree. Podawaj z klopsikami i natką."],
  tip:"Cook4Me: obsmaż na trybie podsmażania, potem 10 minut pod ciśnieniem. Klopsiki świetnie się mrożą — porcję na trzeci dzień odłóż od razu do zamrażarki."},
 
 {g:"Obiady", n:"Fasolka po bretońsku z indykiem", kcal:780, prot:54, carb:101, fat:18, por:1, time:"40 min", batch:3, prep:"Indyka pokrój w kostkę, cebulę i czosnek posiekaj. Suszone pomidory odsącz i posiekaj. Fasolę odsącz i przepłucz.",
- ing:[["Pierś z indyka",133.3333,"g","m"],["Fasola biała",1,"puszka","k"],["Passata pomidorowa",133.3333,"ml","k"],["Pomidory suszone w oleju",15,"g","k"],["Cebula",0.6667,"szt.","w"],["Czosnek",0.6667,"ząbek","w"],["Chleb razowy",3,"kromka","p"],["Oliwa rafinowana",0.9,"łyżka","t"],["Majeranek, papryka słodka, liść laurowy",null,"","x"]],
+ ing:[["Pierś z indyka",133.3333,"g","m"],["Fasola biała",1,"puszka","k"],["Passata pomidorowa",133.3333,"ml","k"],["Pomidory suszone w oleju",15,"g","k"],["Cebula",0.6667,"szt.","w"],["Czosnek",0.6667,"ząbek","w"],["Chleb razowy",3,"kromka","p"],["Oliwa rafinowana",0.9,"łyżka","t"],["Majeranek",null,"","x"],["Papryka słodka",null,"","x"],["Liść laurowy",null,"","x"]],
  steps:["Indyka pokrój w kostkę i obsmaż na oliwie do zarumienienia.","Dodaj posiekaną cebulę i czosnek, zeszklij.","Wlej passatę, dorzuć posiekane suszone pomidory, dodaj majeranek, słodką paprykę i liść laurowy. Duś 15 minut.","Fasolę odsącz, przepłucz i wrzuć do garnka. Duś jeszcze 10 minut.","Dopraw i podawaj z kromką razowego chleba. Sól dodaj na końcu — pomidory i fasola z puszki już ją wnoszą."],
  tip:"Fasolę zawsze przepłucz po odsączeniu — zejdzie zalewa i danie nie będzie mętne. Trzyma się w lodówce 4 dni. Suszone pomidory odsącz z oleju, inaczej danie wyjdzie tłuste."},
 
 {g:"Obiady", n:"Pieczony schab z warzywami korzeniowymi", kcal:795, prot:57, carb:71, fat:31, por:1, time:"75 min", batch:3, prep:"Czosnek roztrzyj z majerankiem, solą i pieprzem, natrzyj mięso i zostaw na 20 minut. W tym czasie warzywa i ziemniaki pokrój w grubą kostkę. Piekarnik na 180°C.",
- ing:[["Schab wieprzowy",233.3333,"g","m"],["Marchew",1.3333,"szt.","w"],["Pietruszka korzeń",0.6667,"szt.","w"],["Seler",66.6667,"g","w"],["Ziemniaki",300,"g","w"],["Czosnek",1,"ząbek","w"],["Oliwa",1.25,"łyżka","t"],["Majeranek, tymianek",null,"","x"]],
+ ing:[["Schab wieprzowy",233.3333,"g","m"],["Marchew",1.3333,"szt.","w"],["Pietruszka korzeń",0.6667,"szt.","w"],["Seler",66.6667,"g","w"],["Ziemniaki",300,"g","w"],["Czosnek",1,"ząbek","w"],["Oliwa",1.25,"łyżka","t"],["Majeranek",null,"","x"],["Tymianek",null,"","x"]],
  steps:["Schab natrzyj oliwą, roztartym czosnkiem, majerankiem, solą i pieprzem. Zostaw na 20 minut.","Warzywa korzeniowe i ziemniaki pokrój w grubą kostkę, wymieszaj z oliwą i tymiankiem.","Rozłóż warzywa w brytfannie, na wierzchu ułóż mięso.","Piecz w 180°C przez 55–65 minut. Po drodze raz przemieszaj warzywa.","Wyjmij i odstaw mięso na 10 minut przed krojeniem."],
  tip:"Schab jest chudy i łatwo go przesuszyć — najlepiej sprawdzić termometrem: 65–68°C w środku i wyjmować. Zimny schab następnego dnia jest świetny na kanapki."},
 
@@ -662,9 +672,9 @@ const DISHES = [
  steps:["Ryż ugotuj dzień wcześniej i schłodź w lodówce — świeży, ciepły ryż się zlepi.","Kurczaka pokrój w kostkę i obsmaż na mocno rozgrzanym oleju. Wyjmij.","Roztrzepane jajka wlej na patelnię, zetnij mieszając i wyjmij.","Smaż cebulę, marchew i czosnek 3 minuty. Dodaj groszek.","Wsyp zimny ryż, rozbij grudki i smaż 3–4 minuty, aż się rozgrzeje.","Wrzuć mięso i jajka z powrotem, wlej sos sojowy, wymieszaj.","Posyp szczypiorkiem."],
  tip:"To najlepszy sposób na wykorzystanie ryżu, który został z poprzedniego dania — zero marnowania. Ugotuj większą partię ryżu przy kurczaku po tajsku."},
 
-{g:"Dania azjatyckie", n:"Tom kha gai — kokosowa zupa z kurczakiem", kcal:795, prot:62, carb:103, fat:15, por:1, time:"30 min", batch:3, prep:"Nastaw ryż. Kurczaka pokrój w paski, marchew w cienkie plastry, pieczarki w plastry. Imbir pokrój w plastry, czosnek rozgnieć. Cytrynę wyciśnij, kolendrę posiekaj.",
- ing:[["Pierś z kurczaka",245,"g","m"],["Mleko kokosowe light",133.3333,"ml","k"],["Bulion warzywny",200,"ml","k"],["Pieczarki",66.6667,"g","w"],["Imbir świeży",10,"g","w"],["Czosnek",0.6667,"ząbek","w"],["Cytryna",0.3333,"szt.","w"],["Marchew",0.3333,"szt.","w"],["Sos sojowy",0.3333,"łyżka","k"],["Ryż basmati",110,"g","s"],["Kolendra lub natka",null,"","w"],["Papryka ostra",null,"","x"]],
- steps:["Ugotuj ryż osobno.","Bulion zagotuj z plastrami imbiru i rozgniecionym czosnkiem, gotuj 5 minut.","Dodaj kurczaka i marchew. Gotuj 8 minut.","Wrzuć pieczarki, gotuj kolejne 3 minuty.","Wlej mleko kokosowe i podgrzej, ale nie gotuj mocno — ma tylko pyrkać.","Zdejmij z ognia, dopraw sokiem z cytryny, sosem sojowym i szczyptą ostrej papryki.","Podawaj z ryżem, posypane kolendrą."],
+{g:"Dania azjatyckie", n:"Tom kha gai — kokosowa zupa z kurczakiem", kcal:795, prot:62, carb:103, fat:15, por:1, time:"30 min", batch:3, prep:"Nastaw ryż. Kurczaka pokrój w paski, marchew w cienkie plastry, pieczarki w plastry. Imbir pokrój w plastry, czosnek rozgnieć. Cytrynę wyciśnij, natkę posiekaj.",
+ ing:[["Pierś z kurczaka",245,"g","m"],["Mleko kokosowe light",133.3333,"ml","k"],["Bulion warzywny",200,"ml","k"],["Pieczarki",66.6667,"g","w"],["Imbir świeży",10,"g","w"],["Czosnek",0.6667,"ząbek","w"],["Cytryna",0.3333,"szt.","w"],["Marchew",0.3333,"szt.","w"],["Sos sojowy",0.3333,"łyżka","k"],["Ryż basmati",110,"g","s"],["Natka pietruszki",null,"","w"],["Papryka ostra",null,"","x"]],
+ steps:["Ugotuj ryż osobno.","Bulion zagotuj z plastrami imbiru i rozgniecionym czosnkiem, gotuj 5 minut.","Dodaj kurczaka i marchew. Gotuj 8 minut.","Wrzuć pieczarki, gotuj kolejne 3 minuty.","Wlej mleko kokosowe i podgrzej, ale nie gotuj mocno — ma tylko pyrkać.","Zdejmij z ognia, dopraw sokiem z cytryny, sosem sojowym i szczyptą ostrej papryki.","Podawaj z ryżem, posypane natką."],
  tip:"Sok z cytryny dodawaj zawsze po zdjęciu z ognia — kwas w gotującym się mleku kokosowym powoduje rozwarstwienie."},
 
 {g:"Dania azjatyckie", n:"Wieprzowina w sosie sojowo-imbirowym", kcal:805, prot:61, carb:91, fat:22, por:1, time:"25 min", batch:2, prep:"Nastaw ryż. Polędwiczkę pokrój w cienkie plastry i zalej łyżką sosu sojowego. Paprykę, marchew i cebulę pokrój w cienkie słupki — im cieńsze, tym bardziej chrupiące zostaną. Czosnek i imbir posiekaj, fasolkę wyjmij z zamrażarki.",
@@ -678,12 +688,12 @@ const DISHES = [
  tip:"Masło orzechowe musi być bez cukru — czytaj skład, bo większość popularnych marek ma dodany cukier i olej palmowy. Skład powinien brzmieć: orzeszki 100%."},
 
 {g:"Kolacje", n:"Zupa pomidorowa z ryżem", kcal:645, prot:33, carb:99, fat:13, por:1, time:"50 min", batch:3, prep:"Włoszczyznę obierz i pokrój. Natkę posiekaj. Ryż odmierz — pójdzie do osobnego garnka.",
- ing:[["Udka z kurczaka",0.6667,"szt.","m"],["Marchew",0.6667,"szt.","w"],["Pietruszka korzeń",0.3333,"szt.","w"],["Seler",33.3333,"g","w"],["Por",0.3333,"szt.","w"],["Passata pomidorowa",166.6667,"ml","k"],["Ryż basmati",80,"g","s"],["Jogurt grecki",1,"łyżka","n"],["Natka",null,"","w"]],
+ ing:[["Udka z kurczaka",0.6667,"szt.","m"],["Marchew",0.6667,"szt.","w"],["Pietruszka korzeń",0.3333,"szt.","w"],["Seler",33.3333,"g","w"],["Por",0.3333,"szt.","w"],["Passata pomidorowa",166.6667,"ml","k"],["Ryż basmati",80,"g","s"],["Jogurt grecki",1,"łyżka","n"],["Natka pietruszki",null,"","w"]],
  steps:["Ugotuj wywar z udek i włoszczyzny (ok. 40 minut). Wyjmij mięso i obierz z kości.","Wlej passatę do wywaru, zagotuj i dopraw.","Ryż ugotuj osobno.","Podawaj z ryżem, kawałkami mięsa, łyżką jogurtu i natką."],
  tip:"Gotujesz jeden garnek na 3 kolacje — jedną porcję od razu zamroź."},
 
 {g:"Kolacje", n:"Krem marchewkowy z ryżem", kcal:645, prot:33, carb:81, fat:21, por:1, time:"35 min", batch:3, prep:"Marchew pokrój w cienkie plasterki, ziemniaki w kostkę 1,5 cm. Ryż wypłucz na sitku pod zimną wodą. Natkę posiekaj.",
- ing:[["Pierś z kurczaka",100,"g","m"],["Marchew",233.3333,"g","w"],["Ziemniaki",80,"g","w"],["Ryż basmati",40,"g","s"],["Bulion warzywny",333.3333,"ml","k"],["Jogurt grecki",1,"łyżka","n"],["Oliwa",1.25,"łyżka","t"],["Majeranek, biały pieprz",null,"","x"],["Natka",null,"","w"]],
+ ing:[["Pierś z kurczaka",100,"g","m"],["Marchew",233.3333,"g","w"],["Ziemniaki",80,"g","w"],["Ryż basmati",40,"g","s"],["Bulion warzywny",333.3333,"ml","k"],["Jogurt grecki",1,"łyżka","n"],["Oliwa",1.25,"łyżka","t"],["Majeranek",null,"","x"],["Pieprz biały",null,"","x"],["Natka pietruszki",null,"","w"]],
  steps:["Marchew pokrój w cienkie plasterki, ziemniaki w kostkę ok. 1,5 cm.","Ryż wypłucz na sitku pod zimną wodą.","Do garnka wlej bulion. Dodaj mięso, marchew, ziemniaki i ryż. Gotuj 20 minut pod częściowym przykryciem.","Wyjmij mięso i podziel na kawałki.","Zblenduj zupę na gładki krem razem z oliwą. Za gęsta — dolej ciepłej wody.","Włóż mięso z powrotem, dopraw. Odstaw pod przykryciem na 1–2 minuty.","Przed podaniem udekoruj jogurtem i natką."],
  tip:"Zupa przetarta z pełnowartościowym białkiem — łagodna i sycąca, dobra na dni bez apetytu. Cook4Me: 8 minut."},
 
@@ -696,7 +706,7 @@ const DISHES = [
  steps:["Jajka ugotuj na twardo (8–9 minut), ostudź i pokrój.","Warzywa pokrój, fasolę odsącz i przepłucz.","Wymieszaj wszystko z odsączonym tuńczykiem.","Polej oliwą i sokiem z cytryny, dopraw. Podawaj z pieczywem."]},
 
 {g:"Kolacje", n:"Grillowany indyk z halloumi", kcal:645, prot:47, carb:44, fat:31, por:1, time:"20 min", wknd:true, prep:"Halloumi namocz w wodzie na 20 minut — to trzeba zacząć najwcześniej. Filet rozkrój wzdłuż i osusz, natrzyj oliwą, czosnkiem i tymiankiem. Pomidora pokrój, rukolę opłucz. Rozgrzej grillownicę do końca.",
- ing:[["Filet z indyka",150,"g","m"],["Halloumi",60,"g","n"],["Pomidor",1,"szt.","w"],["Rukola",25,"g","w"],["Czosnek",1,"ząbek","w"],["Cytryna",0.25,"szt.","w"],["Chleb razowy",2.5,"kromka","p"],["Oliwa",1.25,"łyżka","t"],["Tymianek lub rozmaryn",null,"","x"]],
+ ing:[["Filet z indyka",150,"g","m"],["Halloumi",60,"g","n"],["Pomidor",1,"szt.","w"],["Rukola",25,"g","w"],["Czosnek",1,"ząbek","w"],["Cytryna",0.25,"szt.","w"],["Chleb razowy",2.5,"kromka","p"],["Oliwa",1.25,"łyżka","t"],["Tymianek",null,"","x"]],
  steps:["Filet rozkrój wzdłuż na dwa cieńsze płaty albo rozbij do grubości 1,5 cm. Osusz ręcznikiem.","Natrzyj oliwą, czosnkiem i tymiankiem. Sól i pieprz dodaj tuż przed grillowaniem.","Rozgrzej grillownicę do końca. Połóż mięso, zamknij pokrywę, nie dociskaj.","Grilluj 6–8 minut, nie otwierając przez pierwsze 4 minuty.","Namoczone halloumi osusz, pokrój w plastry i zgrilluj po 2 minuty z każdej strony.","Mięso odstaw na 5 minut pod odwróconym talerzem.","Chleb zgrilluj na końcu. Podawaj z pomidorem i rukolą polanymi oliwą."],
  tip:"Indyk jest bardzo chudy i wysycha błyskawicznie. Termometr: 74°C. Namoczenie halloumi usuwa część soli — ten ser ma ok. 2,5–3 g soli na 100 g."},
 
@@ -705,7 +715,7 @@ const DISHES = [
  steps:["Pierś przekrój wzdłuż na dwa cieńsze płaty. Natrzyj oliwą i oregano.","Grilluj po ok. 4 minuty z każdej strony (w grillownicy 6–7 minut).","Pod koniec połóż plastry mozzarelli i pomidora, przykryj na 2 minuty.","Posyp świeżą bazylią.","Chleb zgrilluj i natrzyj przekrojonym ząbkiem czosnku."]},
 
 {g:"Kolacje", n:"Krupnik z kaszą jęczmienną", kcal:650, prot:36, carb:103, fat:11, por:1, time:"60 min", batch:3, prep:"Włoszczyznę pokrój w kostkę, ziemniaki nieco większą. Kaszę przepłucz na sitku. Natkę i koperek posiekaj.",
- ing:[["Udka z kurczaka",0.6667,"szt.","m"],["Kasza jęczmienna",80,"g","s"],["Marchew",0.6667,"szt.","w"],["Pietruszka korzeń",0.3333,"szt.","w"],["Seler",33.3333,"g","w"],["Por",0.3333,"szt.","w"],["Ziemniaki",200,"g","w"],["Natka, koperek",null,"","w"],["Liść laurowy, ziele angielskie",null,"","x"]],
+ ing:[["Udka z kurczaka",0.6667,"szt.","m"],["Kasza jęczmienna",80,"g","s"],["Marchew",0.6667,"szt.","w"],["Pietruszka korzeń",0.3333,"szt.","w"],["Seler",33.3333,"g","w"],["Por",0.3333,"szt.","w"],["Ziemniaki",200,"g","w"],["Natka pietruszki",null,"","w"],["Koperek",null,"","w"],["Liść laurowy",null,"","x"],["Ziele angielskie",null,"","x"]],
  steps:["Ugotuj wywar z udek, liścia laurowego i ziela (ok. 40 minut). Wyjmij mięso i obierz z kości.","Warzywa pokrój w kostkę, ziemniaki nieco większą.","Wrzuć warzywa i przepłukaną kaszę do wywaru. Gotuj 20 minut, aż kasza zmięknie.","Dodaj mięso, dopraw solą i pieprzem.","Podawaj posypane natką i koperkiem."],
  tip:"Kasza jęczmienna pęcznieje jeszcze w lodówce — następnego dnia dolej trochę wody przy odgrzewaniu. Cook4Me: wywar 20 min, potem warzywa i kasza 8 min."},
 
@@ -1012,6 +1022,27 @@ function buildList(){
     const key = name+'|';
     if(!agg.has(key)) agg.set(key, {key, name, unit:'', cat, qty:null});
   });
+
+  // scal pozycje o tej samej nazwie, ale różnych jednostkach (sztuki + gramy)
+  const wgNazwy = new Map();
+  agg.forEach(v=>{
+    if(!wgNazwy.has(v.name)) wgNazwy.set(v.name, []);
+    wgNazwy.get(v.name).push(v);
+  });
+  wgNazwy.forEach((lista, name)=>{
+    if(lista.length < 2) return;
+    const daSie = lista.every(v => v.qty !== null && (v.unit === 'g' || NA_GRAMY[name+'|'+v.unit]));
+    if(!daSie) return;
+    const suma = lista.reduce((a,v)=> a + v.qty * (v.unit === 'g' ? 1 : NA_GRAMY[name+'|'+v.unit]), 0);
+    lista.forEach(v => agg.delete(v.key));
+    const key = name+'|g';
+    agg.set(key, {key, name, unit:'g', cat:lista[0].cat, qty:suma});
+  });
+
+  agg.forEach(v=>{
+    if(v.qty !== null && CALE.has(v.unit)) v.qty = Math.ceil(v.qty - 0.02);
+  });
+
   const byCat = {};
   [...agg.values()].forEach(v=>{ (byCat[v.cat] ||= []).push(v); });
   ORDER.forEach(c=>{
