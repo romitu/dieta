@@ -575,7 +575,13 @@ const NA_GRAMY = {
 };
 
 // jednostek niepodzielnych nie kupisz w kawałku — na liście zakupów zaokrąglamy w górę
-const CALE = new Set(['szt.','puszka','ząbek','kromka','torebka']);
+const CALE = new Set(['szt.','puszka','ząbek','kromka','torebka','kostka']);
+
+// niektóre składniki gotujesz w innej postaci, niż je kupujesz.
+// przepis podaje bulion w mililitrach, ale w sklepie bierzesz kostki.
+const ZAKUPY_INACZEJ = {
+  'Bulion warzywny|ml': { name:'Kostka bulionowa warzywna', unit:'kostka', na:500 }
+};
 
 // [nazwa, ilość, jednostka, kategoria]  — ilość null = "do smaku"
 const DISHES = [
@@ -627,12 +633,12 @@ const DISHES = [
  steps:["Ugotuj wywar na mięsie (ok. 60 minut). Wyjmij mięso i pokrój.","Do wywaru dodaj starte buraki, marchew, pietruszkę, ziemniaki w kostce i kapustę w paskach.","Wlej passatę i gotuj ok. 25 minut, aż warzywa zmiękną.","Dodaj odsączoną fasolę i mięso.","Zakwaś sokiem z cytryny, dopraw czosnkiem, majerankiem, solą i pieprzem.","Podawaj z łyżką jogurtu i kromką razowego chleba."],
  tip:"Cook4Me — dwa etapy: mięso 25 min, otwórz, warzywa kolejne 6–8 min. Fasolę, cytrynę i mięso dodaj po otwarciu. Barszcz z dnia na dzień smakuje lepiej i trzyma się 4 dni."},
 
-{g:"Obiady", n:"Wieprzowina w sosie chrzanowym", kcal:805, prot:63, carb:99, fat:18, por:1, time:"65 min", batch:2, prep:"Mięso pokrój i rozbij tłuczkiem, oprósz solą i pieprzem. Czosnek zetrzyj. Ziemniaki obierz i pokrój. Koperek i natkę posiekaj.",
+{g:"Obiady", n:"Wieprzowina w sosie chrzanowym", kcal:805, prot:63, carb:99, fat:18, por:1, time:"65 min", batch:2, prep:"Rozpuść kostkę bulionową w 500 ml wrzątku — potrzebujesz 125 ml, reszta przyda się przy odgrzewaniu. Mięso pokrój i rozbij tłuczkiem, oprósz solą i pieprzem. Czosnek zetrzyj. Ziemniaki obierz i pokrój. Koperek i natkę posiekaj.",
  ing:[["Szynka wieprzowa (chuda)",210,"g","m"],["Ziemniaki",400,"g","w"],["Czosnek",1,"ząbek","w"],["Bulion warzywny",125,"ml","k"],["Chrzan tarty",20,"g","k"],["Jogurt grecki",75,"g","n"],["Fasolka szparagowa mrożona",150,"g","z"],["Oliwa",0.5,"łyżeczka","t"],["Natka pietruszki",null,"","w"],["Koperek",null,"","w"]],
  steps:["Mięso pokrój na mniejsze kawałki i rozbij tłuczkiem. Oprósz solą i pieprzem.","W garnku podsmaż na oliwie starty czosnek, wlej bulion i zagotuj.","Osobno obsmaż mięso na suchej, dobrze rozgrzanej patelni.","Przełóż do gotującego bulionu, przykryj i gotuj 40–50 minut. Po 20 minutach dodaj chrzan.","Ziemniaki ugotuj i utłucz na puree. Fasolkę ugotuj osobno.","Zdejmij garnek z ognia. Zahartuj jogurt kilkoma łyżkami bulionu i wmieszaj razem z koperkiem.","Podawaj z puree i fasolką, posyp natką."],
  tip:"Nabiał zawsze po zdjęciu z ognia — jogurt wrzucony do wrzątku się zwarzy. Chrzan pod ciśnieniem traci ostrość, więc w Cook4Me dodaj go po otwarciu (18–20 min)."},
 
-{g:"Obiady", n:"Polędwiczka z pieczarkami i boczniakami", kcal:790, prot:58, carb:91, fat:22, por:1, time:"30 min", batch:2, prep:"Zanim rozgrzejesz patelnię: polędwiczkę pokrój w medaliony 2 cm, cebulę w kostkę, pieczarki i boczniaki w plastry, czosnek przeciśnij. Grzyby trafiają na patelnię zaraz po mięsie.",
+{g:"Obiady", n:"Polędwiczka z pieczarkami i boczniakami", kcal:790, prot:58, carb:91, fat:22, por:1, time:"30 min", batch:2, prep:"Rozpuść pół kostki bulionowej w 250 ml wrzątku — do sosu idzie tylko 50 ml. Zanim rozgrzejesz patelnię: polędwiczkę pokrój w medaliony 2 cm, cebulę w kostkę, pieczarki i boczniaki w plastry, czosnek przeciśnij. Grzyby trafiają na patelnię zaraz po mięsie.",
  ing:[["Polędwiczka wieprzowa",250,"g","m"],["Pieczarki",125,"g","w"],["Boczniaki",75,"g","w"],["Cebula",1,"szt.","w"],["Czosnek",0.5,"ząbek","w"],["Kapusta kiszona",75,"g","w"],["Jogurt grecki",1,"łyżka","n"],["Bulion warzywny",50,"ml","k"],["Kasza gryczana",1.25,"torebka","s"],["Oliwa",1,"łyżka","t"],["Tymianek",null,"","x"]],
  steps:["Polędwiczkę pokrój w medaliony ok. 2 cm, oprósz solą i pieprzem.","Obsmaż na oliwie po 2–3 minuty z każdej strony i odłóż.","Na tej samej patelni podsmaż cebulę, pieczarki i boczniaki — aż odparuje woda.","Dodaj czosnek i tymianek, wlej bulion i zagotuj.","Zdejmij z ognia i zabiel jogurtem.","Włóż mięso z powrotem na 2 minuty. Podawaj z kaszą i surówką."],
  tip:"Polędwiczka ma ok. 3% tłuszczu — najchudsze mięso wieprzowe. Nie przesmażaj: w środku ma zostać lekko różowa."},
@@ -672,7 +678,7 @@ const DISHES = [
  steps:["Ryż ugotuj dzień wcześniej i schłodź w lodówce — świeży, ciepły ryż się zlepi.","Kurczaka pokrój w kostkę i obsmaż na mocno rozgrzanym oleju. Wyjmij.","Roztrzepane jajka wlej na patelnię, zetnij mieszając i wyjmij.","Smaż cebulę, marchew i czosnek 3 minuty. Dodaj groszek.","Wsyp zimny ryż, rozbij grudki i smaż 3–4 minuty, aż się rozgrzeje.","Wrzuć mięso i jajka z powrotem, wlej sos sojowy, wymieszaj.","Posyp szczypiorkiem."],
  tip:"To najlepszy sposób na wykorzystanie ryżu, który został z poprzedniego dania — zero marnowania. Ugotuj większą partię ryżu przy kurczaku po tajsku."},
 
-{g:"Dania azjatyckie", n:"Tom kha gai — kokosowa zupa z kurczakiem", kcal:795, prot:62, carb:103, fat:15, por:1, time:"30 min", batch:3, prep:"Nastaw ryż. Kurczaka pokrój w paski, marchew w cienkie plastry, pieczarki w plastry. Imbir pokrój w plastry, czosnek rozgnieć. Cytrynę wyciśnij, natkę posiekaj.",
+{g:"Dania azjatyckie", n:"Tom kha gai — kokosowa zupa z kurczakiem", kcal:795, prot:62, carb:103, fat:15, por:1, time:"30 min", batch:3, prep:"Rozpuść kostkę bulionową w 500 ml wrzątku. Nastaw ryż. Kurczaka pokrój w paski, marchew w cienkie plastry, pieczarki w plastry. Imbir pokrój w plastry, czosnek rozgnieć. Cytrynę wyciśnij, natkę posiekaj.",
  ing:[["Pierś z kurczaka",245,"g","m"],["Mleko kokosowe light",133.3333,"ml","k"],["Bulion warzywny",200,"ml","k"],["Pieczarki",66.6667,"g","w"],["Imbir świeży",10,"g","w"],["Czosnek",0.6667,"ząbek","w"],["Cytryna",0.3333,"szt.","w"],["Marchew",0.3333,"szt.","w"],["Sos sojowy",0.3333,"łyżka","k"],["Ryż basmati",110,"g","s"],["Natka pietruszki",null,"","w"],["Papryka ostra",null,"","x"]],
  steps:["Ugotuj ryż osobno.","Bulion zagotuj z plastrami imbiru i rozgniecionym czosnkiem, gotuj 5 minut.","Dodaj kurczaka i marchew. Gotuj 8 minut.","Wrzuć pieczarki, gotuj kolejne 3 minuty.","Wlej mleko kokosowe i podgrzej, ale nie gotuj mocno — ma tylko pyrkać.","Zdejmij z ognia, dopraw sokiem z cytryny, sosem sojowym i szczyptą ostrej papryki.","Podawaj z ryżem, posypane natką."],
  tip:"Sok z cytryny dodawaj zawsze po zdjęciu z ognia — kwas w gotującym się mleku kokosowym powoduje rozwarstwienie."},
@@ -692,7 +698,7 @@ const DISHES = [
  steps:["Ugotuj wywar z udek i włoszczyzny (ok. 40 minut). Wyjmij mięso i obierz z kości.","Wlej passatę do wywaru, zagotuj i dopraw.","Ryż ugotuj osobno.","Podawaj z ryżem, kawałkami mięsa, łyżką jogurtu i natką."],
  tip:"Gotujesz jeden garnek na 3 kolacje — jedną porcję od razu zamroź."},
 
-{g:"Kolacje", n:"Krem marchewkowy z ryżem", kcal:645, prot:33, carb:81, fat:21, por:1, time:"35 min", batch:3, prep:"Marchew pokrój w cienkie plasterki, ziemniaki w kostkę 1,5 cm. Ryż wypłucz na sitku pod zimną wodą. Natkę posiekaj.",
+{g:"Kolacje", n:"Krem marchewkowy z ryżem", kcal:645, prot:33, carb:81, fat:21, por:1, time:"35 min", batch:3, prep:"Rozpuść dwie kostki bulionowe w litrze wrzątku. Marchew pokrój w cienkie plasterki, ziemniaki w kostkę 1,5 cm. Ryż wypłucz na sitku pod zimną wodą. Natkę posiekaj.",
  ing:[["Pierś z kurczaka",100,"g","m"],["Marchew",233.3333,"g","w"],["Ziemniaki",80,"g","w"],["Ryż basmati",40,"g","s"],["Bulion warzywny",333.3333,"ml","k"],["Jogurt grecki",1,"łyżka","n"],["Oliwa",1.25,"łyżka","t"],["Majeranek",null,"","x"],["Pieprz biały",null,"","x"],["Natka pietruszki",null,"","w"]],
  steps:["Marchew pokrój w cienkie plasterki, ziemniaki w kostkę ok. 1,5 cm.","Ryż wypłucz na sitku pod zimną wodą.","Do garnka wlej bulion. Dodaj mięso, marchew, ziemniaki i ryż. Gotuj 20 minut pod częściowym przykryciem.","Wyjmij mięso i podziel na kawałki.","Zblenduj zupę na gładki krem razem z oliwą. Za gęsta — dolej ciepłej wody.","Włóż mięso z powrotem, dopraw. Odstaw pod przykryciem na 1–2 minuty.","Przed podaniem udekoruj jogurtem i natką."],
  tip:"Zupa przetarta z pełnowartościowym białkiem — łagodna i sycąca, dobra na dni bez apetytu. Cook4Me: 8 minut."},
@@ -1037,6 +1043,14 @@ function buildList(){
     lista.forEach(v => agg.delete(v.key));
     const key = name+'|g';
     agg.set(key, {key, name, unit:'g', cat:lista[0].cat, qty:suma});
+  });
+
+  [...agg.entries()].forEach(([key, v])=>{
+    const inaczej = ZAKUPY_INACZEJ[key];
+    if(!inaczej || v.qty === null) return;
+    agg.delete(key);
+    const nowy = inaczej.name+'|'+inaczej.unit;
+    agg.set(nowy, {key:nowy, name:inaczej.name, unit:inaczej.unit, cat:v.cat, qty:v.qty/inaczej.na});
   });
 
   agg.forEach(v=>{
